@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 236">
+  <defs><radialGradient id="spot" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#FFE9A8"/><stop offset=".45" stop-color="#9C6ADE"/><stop offset="1" stop-color="#3B2470"/></radialGradient></defs>
+  <rect width="420" height="236" fill="url(#spot)"/>
+  <ellipse cx="210" cy="214" rx="120" ry="14" fill="#2A1A55" opacity=".45"/>
+  <path d="M200 168 L184 206 M220 168 L240 200 L252 196" fill="none" stroke="#2D2A5A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M192 124 L228 124 L244 174 L176 174 Z" fill="#FF6FA8"/>
+  <path d="M176 174 L244 174" stroke="#FFE27A" stroke-width="5"/>
+  <path d="M195 132 L166 98 M226 132 L258 110" stroke="#A86B3C" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="210" cy="104" r="17" fill="#A86B3C"/>
+  <path d="M193 102 a17 17 0 0 1 34 0 q-6-10-17-8 q-10 0-17 8z" fill="#2B1B17"/>
+  <path d="M226 96 q14 4 10 22" fill="none" stroke="#2B1B17" stroke-width="7" stroke-linecap="round"/>
+  <path d="M204 112 q6 5 12 0" fill="none" stroke="#1B1640" stroke-width="2" stroke-linecap="round"/>
+  <g fill="#FFE27A" font-family="Arial, sans-serif" font-size="30"><text x="90" y="80">♪</text><text x="300" y="66">♫</text><text x="330" y="150">♪</text><text x="60" y="160">♫</text></g>
+  <g fill="#fff"><path d="M120 40 l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M370 100 l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></g>
+</svg>

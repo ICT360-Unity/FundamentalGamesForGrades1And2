@@ -1,0 +1,106 @@
+/* Memory Movers | css/style.css
+   All colours, fonts and visual styling. JS sets only position and size (inline left/top/width/height),
+   font sizes, and these colour variables. Change a variable here and the whole game follows. */
+
+:root {
+  /* core palette */
+  --kraft: #D9A766;        /* cardboard */
+  --teal: #0F6E74;         /* storage, shelf, primary buttons */
+  --teal-d: #0A4F54;
+  --teal-l: #D3ECEC;
+  --tape: #FFD23F;         /* highlights, stars, Play button */
+  --ink: #1F2A44;          /* text, letterbox */
+  --ram: #FF8C42;          /* desk / RAM / Eject */
+  --sky: #E6F2F4;
+  --green: #3BB273;
+  --green-l: #DDF3E6;      /* correct toast */
+  --red: #E03E52;
+  --red-l: #FBE0E3;        /* wrong toast */
+  --white: #FFFFFF;
+  --muted: #5B6785;        /* secondary text */
+
+  /* derived */
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-soft: rgba(255, 255, 255, .85);
+  --hud-bg: var(--teal);
+  --backdrop: rgba(31, 42, 68, .58);   /* behind intro / level-complete cards */
+  --blackout: rgba(0, 0, 0, .93);       /* level 1 power cut */
+  --recap-bg: rgba(255, 255, 255, .12);
+  --slot-bg: rgba(15, 110, 116, .12);   /* level 2 empty ladder steps */
+  --slot-num: rgba(15, 110, 116, .35);
+  --bar-bg: #F3E6D6;                    /* level 3 empty capacity bar */
+  --capacity-tick: rgba(31, 42, 68, .12);
+  /* level 3 capacity-bar segment colours, used in order */
+  --seg-1: #7B61FF; --seg-2: #3BB273; --seg-3: #FF7EB6; --seg-4: #0F6E74;
+  --seg-5: #FF8C42; --seg-6: #4FA3E0; --seg-7: #E0A800;
+
+  --font: "Baloo 2", "Trebuchet MS", "Segoe UI", sans-serif;
+  --radius-panel: 22px;
+  --radius-btn: 18px;
+  --shadow-card: 0 6px 18px rgba(31, 42, 68, .14);
+  --shadow-btn: 0 4px 0 rgba(31, 42, 68, .25);
+  --focus-ring: 4px solid var(--tape);
+}
+
+/* ---------- page + stage (stage is fixed 1130 x 502 and scaled by js/main.js) */
+html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; }
+body {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+#stage {
+  position: relative; width: 1130px; height: 502px; flex: none;
+  transform-origin: center center; overflow: hidden; background: var(--sky);
+}
+
+/* ---------- building blocks created by js/kit.js */
+.abs { position: absolute; box-sizing: border-box; }
+.img { object-fit: contain; pointer-events: none; }
+.bg { object-fit: fill; }
+.txt { display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.15; pointer-events: none; }
+.txt.left { justify-content: flex-start; text-align: left; }
+.txt.right { justify-content: flex-end; text-align: right; }
+.txt.topleft { justify-content: flex-start; align-items: flex-start; text-align: left; }
+.multiline { white-space: pre-line; }
+.panel { border-radius: var(--radius-panel); }
+.card { box-shadow: var(--shadow-card); }
+.btn { cursor: pointer; border-radius: var(--radius-btn); box-shadow: var(--shadow-btn); transition: filter .12s, transform .08s; }
+.btn:hover { filter: brightness(1.06); }
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(31, 42, 68, .25); }
+.tap { cursor: pointer; }
+[role=button]:focus-visible { outline: var(--focus-ring); outline-offset: 3px; }
+
+/* ---------- shell */
+.toast-layer { pointer-events: none; }
+.screen-layer { pointer-events: none; }
+.hud { background: var(--hud-bg); }
+.hud-dot { border-radius: 8px; }
+.toast { box-shadow: var(--shadow-card); }
+.backdrop { background: var(--backdrop); }
+.game-title { letter-spacing: -1px; }
+.recap { }
+.takeaway { }
+
+/* ---------- level 1: Desk vs Shelf */
+.pill { }
+.timer-track { border-radius: 11px; overflow: hidden; }
+.timer-fill { background: var(--tape); transform-origin: left center; }
+.blackout { background: var(--blackout); }
+
+/* ---------- level 2: Unit Ladder */
+.ladder-slot { }
+.unit-card { }
+.item-card { }
+
+/* ---------- level 3: Pack the Pendrive */
+.capacity-bar { overflow: hidden; }
+.capacity-tick { background: var(--capacity-tick); }
+.capacity-seg { border-radius: 6px; }
+.file-tile { }
+.mission-card { }
+
+/* ---------- level 4: Inside or Outside? */
+.bin { }
+
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }

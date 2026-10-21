@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netizen Badge Quest · L5 Digital Citizenship</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+/* =========================================================
+   Netizen Badge Quest — styles
+   Stage is a fixed 1130 x 502 canvas, scaled to fit by JS.
+   Colour + type tokens live in :root — tweak them here.
+   ========================================================= */
+:root {
+  --sky: #D7E8FF;          /* page / stage background */
+  --sky-dot: #C3D9FA;
+  --ink: #1B1640;          /* main text */
+  --grape: #5B3FC4;        /* tablet bumper + primary buttons */
+  --grape-dk: #3E2A8F;
+  --felt: #1F6E5A;         /* badge sash */
+  --felt-dk: #16523F;
+  --stitch: #FFE27A;       /* stitching + highlights */
+  --wall: #FFF4D6;         /* tablet home wallpaper */
+  --soft: #F7F5FD;         /* app body */
+  --line: #E6E1F5;
+  --good: #1E9E63;
+  --nudge: #E8961E;
+  --nudge-ink: #8A5200;
+  --nudge-bg: #FFF1D6;
+  --focus: #FF4FA3;
+
+  --f-head: "Fredoka", "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--sky); color: var(--ink); font-family: var(--f-body); }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+img { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Stage ---------- */
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1130px; height: 502px;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  background: radial-gradient(var(--sky-dot) 1.5px, transparent 1.6px) 0 0 / 22px 22px, var(--sky);
+  overflow: hidden;
+}
+
+/* ---------- Badge strip (top, horizontal) ---------- */
+.sash {
+  position: absolute; left: 10px; top: 6px; width: 1110px; height: 66px;
+  padding: 6px 26px 6px 18px; border-radius: 18px; display: flex; align-items: center; gap: 6px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 6px),
+    var(--felt);
+  box-shadow: inset 0 0 0 4px var(--felt-dk), 0 5px 0 var(--felt-dk);
+}
+.sash::before {
+  content: ""; position: absolute; inset: 6px; pointer-events: none;
+  border: 2px dashed rgba(255, 226, 122, .5); border-radius: 13px;
+}
+.sash-head { flex: none; width: 88px; white-space: nowrap; display: flex; flex-direction: column; color: #fff; padding-left: 6px; }
+.sash-head h2 { font-family: var(--f-head); font-weight: 600; font-size: 17px; line-height: 1.1; }
+.sash-count { font-size: 13px; font-weight: 700; color: var(--stitch); }
+.sash-grid { flex: 1; list-style: none; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 0 2px; }
+.patch { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.patch-disc {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  border: 2px dashed rgba(255,255,255,.32); background: rgba(0,0,0,.12);
+}
+.patch-disc img { width: 19px; height: 19px; opacity: .22; }
+.patch-name { font-size: 10px; letter-spacing: -.1px; line-height: 1.1; font-weight: 700; text-align: center; white-space: nowrap; color: rgba(255,255,255,.55); }
+.patch.earned .patch-disc {
+  border: 0; background: var(--c);
+  outline: 1.5px dashed var(--stitch); outline-offset: -4px;
+  box-shadow: 0 0 0 2px var(--c), 0 0 0 3.5px rgba(0,0,0,.18), 0 3px 0 3.5px rgba(0,0,0,.18);
+}
+.patch.earned img { opacity: 1; }
+.patch.earned .patch-name { color: #fff; }
+.patch.pop .patch-disc { animation: pop .65s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes pop { from { transform: scale(.3) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+
+/* ---------- Tablet ---------- */
+.tablet {
+  position: absolute; left: 10px; top: 80px; width: 1110px; height: 414px;
+  padding: 12px 22px; border-radius: 30px; background: var(--grape);
+  box-shadow: 0 6px 0 var(--grape-dk), inset 0 -4px 0 rgba(0,0,0,.15), inset 0 3px 0 rgba(255,255,255,.18);
+}
+.tablet::before { /* camera */
+  content: ""; position: absolute; left: 8px; top: 50%; width: 7px; height: 7px;
+  border-radius: 50%; background: #2A1D66; transform: translateY(-50%);
+}
+.screen { position: relative; width: 1066px; height: 390px; border-radius: 16px; overflow: hidden; background: var(--wall); display: flex; flex-direction: column; }
+.status { height: 26px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12.5px; font-weight: 700; background: rgba(27,22,64,.07); }
+.status-right { display: flex; align-items: center; gap: 10px; }
+.mute { font-size: 13px; padding: 1px 6px; border-radius: 6px; }
+.mute:hover { background: rgba(27,22,64,.08); }
+.battery { width: 24px; height: 12px; border: 2px solid var(--ink); border-radius: 3px; position: relative; padding: 1px; }
+.battery::before { content: ""; display: block; height: 100%; width: 75%; background: var(--good); border-radius: 1px; }
+.battery::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 4px; background: var(--ink); border-radius: 0 1px 1px 0; }
+.screen-body { flex: 1; position: relative; min-height: 0; }
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  background: var(--grape); color: #fff; font-family: var(--f-head); font-weight: 600; font-size: 17px;
+  padding: 10px 24px; border-radius: 999px; box-shadow: 0 4px 0 var(--grape-dk); transition: transform .08s;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--grape-dk); }
+.btn-primary:disabled { background: #B9B3D6; box-shadow: 0 4px 0 #9A93BF; cursor: not-allowed; filter: none; transform: none; }
+
+/* ---------- Lock screen ---------- */
+.lock {
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 4px; color: #fff;
+  background: radial-gradient(circle at 50% 120%, #8D76F0 0 30%, transparent 60%), linear-gradient(160deg, #6E54E0, #3E2A8F);
+}
+.lock-time { font-family: var(--f-head); font-weight: 500; font-size: 46px; line-height: 1; }
+.lock-date { font-size: 14px; opacity: .85; margin-bottom: 10px; }
+.lock-owl { width: 70px; animation: bob 3s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-5px); } }
+.lock h1 { font-family: var(--f-head); font-weight: 600; font-size: 36px; letter-spacing: .3px; }
+.lock-lead { font-size: 16px; line-height: 1.4; max-width: 430px; opacity: .95; margin-bottom: 12px; }
+.lock .btn-primary { background: var(--stitch); color: var(--ink); box-shadow: 0 4px 0 #D6B240; font-size: 19px; padding: 11px 30px; }
+
+/* ---------- Home screen ---------- */
+.home {
+  height: 100%; padding: 14px 60px; display: flex; flex-direction: column; gap: 14px;
+  background: radial-gradient(circle at 92% 6%, #FFE7A3 0 70px, transparent 71px), var(--wall);
+}
+.home-top { display: flex; align-items: center; gap: 14px; }
+.home-owl { width: 58px; flex: none; }
+.bubble {
+  position: relative; background: #fff; border-radius: 18px; padding: 10px 16px;
+  font-size: 17px; line-height: 1.35; box-shadow: 0 0 0 2px var(--line); max-width: 560px;
+}
+.bubble::before {
+  content: ""; position: absolute; left: -9px; top: 50%; width: 16px; height: 16px; background: #fff;
+  transform: translateY(-50%) rotate(45deg); box-shadow: -2px 2px 0 var(--line);
+}
+.app-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px 10px; }
+.app { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 6px; border-radius: 16px; }
+.app-icon {
+  width: 76px; height: 76px; border-radius: 22px; background: var(--c); display: grid; place-items: center;
+  box-shadow: 0 4px 0 rgba(0,0,0,.2); transition: transform .15s;
+}
+.app:hover .app-icon { transform: translateY(-3px); }
+.app:active .app-icon { transform: translateY(2px); }
+.app-icon img { width: 42px; height: 42px; }
+.app-name { font-size: 14px; font-weight: 700; }
+.app-done {
+  position: absolute; top: 0; right: 22px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--good); color: #fff; font-size: 14px; font-weight: 700;
+  border: 3px solid var(--wall);
+}
+
+/* ---------- App view ---------- */
+.app-view { height: 100%; display: flex; flex-direction: column; background: var(--soft); }
+.app-bar { height: 46px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: var(--c); color: #fff; }
+.home-btn { background: rgba(255,255,255,.22); color: #fff; border-radius: 999px; padding: 5px 14px; font-weight: 700; font-size: 14px; }
+.home-btn:hover { background: rgba(255,255,255,.32); }
+.app-bar img { width: 24px; height: 24px; }
+.app-bar h2 { font-family: var(--f-head); font-weight: 600; font-size: 20px; }
+/* Question panel on the LEFT, scene on the RIGHT (DOM keeps scene first so it's read first) */
+.app-body { flex: 1; min-height: 0; display: flex; flex-direction: row-reverse; gap: 14px; padding: 14px; }
+.scene { flex: 0 0 520px; position: relative; }
+
+/* ---------- Laptop frame around every scenario ---------- */
+.laptop { height: 100%; display: flex; flex-direction: column; align-items: center; }
+.lid {
+  position: relative; flex: 1; min-height: 0; width: 488px; padding: 13px 10px 10px;
+  background: linear-gradient(160deg, #34305A, #1F1C38); border-radius: 14px 14px 4px 4px;
+  box-shadow: inset 0 0 0 2px #45406E;
+}
+.cam { position: absolute; top: 4px; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: #6E68A0; transform: translateX(-50%); }
+.display { position: relative; width: 100%; height: 100%; border-radius: 3px; overflow: hidden; background: #fff; }
+.base {
+  position: relative; flex: none; width: 520px; height: 13px; border-radius: 2px 2px 14px 14px;
+  background: linear-gradient(#E4E0F0, #B9B3D0); box-shadow: 0 3px 0 #9E97BA;
+}
+.notch { position: absolute; left: 50%; top: 0; width: 76px; height: 5px; transform: translateX(-50%); background: #A9A2C4; border-radius: 0 0 7px 7px; }
+
+/* ---------- Confetti ---------- */
+.confetti, .burst-ring { position: absolute; pointer-events: none; z-index: 50; }
+.burst-ring { border: 4px solid; border-radius: 50%; transform: translate(-50%, -50%); }
+.panel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Guide + choices */
+.panel, .pw-panel { padding-right: 4px; }
+/* Question card: app-coloured border + a tail pointing right into the scene */
+.ask { position: relative; background: #fff; border: 3px solid var(--c); border-radius: 14px; padding: 7px 12px 10px; }
+.ask::before {
+  content: ""; position: absolute; right: -11px; top: 22px; width: 16px; height: 16px; background: #fff;
+  border-right: 3px solid var(--c); border-top: 3px solid var(--c); transform: rotate(45deg);
+}
+.ask-head { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.ask-owl { width: 30px; height: 30px; }
+.ask-who { font-size: 13px; font-weight: 700; color: var(--c); }
+.ask-q { font-family: var(--f-head); font-weight: 600; font-size: 18px; line-height: 1.22; min-height: 44px; }
+.ready .ask-q { animation: q-in .35s ease-out; }
+@keyframes q-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.watch { font-family: var(--f-body); font-weight: 700; font-size: 15px; color: #6B6890; }
+.dots { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); animation: dot 1s infinite; }
+.dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* Scene cue: the detail the question is about gets the same app colour */
+.scene .key { outline: 3px solid transparent; outline-offset: 3px; transition: outline-color .3s; }
+.cue .key { outline-color: var(--c); }
+.cue .msg.key, .cue .art-msg p.key, .cue .paused.key, .cue .you.key, .cue .perm.key, .cue .post.key {
+  box-shadow: 0 0 0 9px color-mix(in srgb, var(--c) 18%, transparent);
+}
+.ring.key { border-radius: 50%; }
+
+/* Choices wait until the question is shown, then slide in one by one */
+.panel .choice { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.panel.ready .choice { opacity: 1; transform: none; pointer-events: auto; transition: opacity .3s, transform .3s, box-shadow .12s; }
+.panel.ready .choice:nth-child(2) { transition-delay: .12s, .12s, 0s; }
+.panel.ready .choice:nth-child(3) { transition-delay: .24s, .24s, 0s; }
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choice {
+  text-align: left; background: #fff; border-radius: 12px; padding: 8px 12px; font-size: 14.5px; line-height: 1.3;
+  box-shadow: 0 0 0 2px var(--line), 0 3px 0 var(--line); transition: transform .08s, box-shadow .12s;
+}
+.choice:hover { box-shadow: 0 0 0 2px var(--c), 0 3px 0 var(--c); }
+.choice:active { transform: translateY(2px); }
+.panel.ready .choice.tried, .choice.tried { cursor: default; opacity: .55; text-decoration: line-through; text-decoration-color: rgba(27,22,64,.35); box-shadow: 0 0 0 2px #F3D7A6; transform: none; }
+.nudge { background: var(--nudge-bg); border-left: 5px solid var(--nudge); border-radius: 10px; padding: 6px 10px; font-size: 13px; line-height: 1.35; animation: shake .35s; }
+.nudge strong { display: block; font-family: var(--f-head); font-weight: 600; font-size: 15px; color: var(--nudge-ink); }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* Badge-earned card */
+.win {
+  height: 100%; background: #fff; border-radius: 14px; box-shadow: 0 0 0 2px var(--line);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; padding: 16px;
+}
+.win-patch {
+  width: 74px; height: 74px; border-radius: 50%; background: var(--c); display: grid; place-items: center;
+  outline: 2px dashed var(--stitch); outline-offset: -7px;
+  box-shadow: 0 0 0 5px var(--c), 0 4px 0 5px rgba(0,0,0,.15);
+  animation: pop .7s cubic-bezier(.3, 1.6, .5, 1); margin-bottom: 6px;
+}
+.win-patch img { width: 38px; height: 38px; }
+.win-label { font-size: 13.5px; font-weight: 700; color: var(--good); }
+.win h3 { font-family: var(--f-head); font-weight: 600; font-size: 25px; line-height: 1.1; }
+.win-rule { font-size: 13.5px; font-weight: 700; background: #F1EDFF; border-radius: 999px; padding: 3px 12px; }
+.win-text { font-size: 14px; line-height: 1.4; max-width: 270px; }
+
+/* ---------- Scenes ---------- */
+.fill { width: 100%; height: 100%; object-fit: cover; }
+
+/* Pop-up */
+.fake-popup {
+  position: absolute; left: 50%; top: 50%; width: 270px; transform: translate(-50%, -50%);
+  background: #fff; border-radius: 12px; overflow: hidden; text-align: center;
+  box-shadow: 0 0 0 4px #FFD23F, 0 12px 30px rgba(0,0,0,.35);
+  animation: glow 1.4s ease-in-out infinite; /* slow pulse: well under 3 flashes/sec */
+}
+@keyframes glow { 50% { box-shadow: 0 0 0 4px #FF3D7F, 0 12px 30px rgba(0,0,0,.35); } }
+.fp-bar { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; background: #F2F2F2; font-size: 12px; color: #666; }
+.fp-x { font-size: 13px; color: #999; }
+.fp-big { font-family: var(--f-head); font-weight: 700; font-size: 38px; color: #E8114F; margin-top: 8px; animation: wobble 1.4s ease-in-out infinite; }
+@keyframes wobble { 50% { transform: scale(1.07); } }
+.fp-small { font-size: 14px; padding: 0 14px; }
+.fp-claim { display: inline-block; margin: 10px 0 4px; background: #22C55E; color: #fff; font-weight: 700; padding: 8px 22px; border-radius: 8px; font-size: 15px; }
+.fp-tiny { font-size: 11px; color: #999; padding-bottom: 10px; }
+
+.solved .fake-popup { display: none; }
+
+/* Chat */
+.sc-chat { height: 100%; display: flex; flex-direction: column; background: #EEF3FA; }
+.chat-head { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #fff; border-bottom: 2px solid var(--line); }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 15px; background: var(--a); flex: none; }
+.chat-head b { display: block; font-size: 15px; }
+.chat-head small { font-size: 12px; color: #6B6890; }
+.chat-log { flex: 1; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.msg { max-width: 78%; background: #fff; border-radius: 16px 16px 16px 4px; padding: 6px 12px; font-size: 14.5px; line-height: 1.3; box-shadow: 0 1px 0 var(--line); opacity: 0; animation: msg-in .35s forwards; }
+.msg .from { display: block; font-size: 11.5px; font-weight: 700; color: #6B6890; margin-bottom: 2px; }
+.msg.mine { align-self: flex-end; background: #CDE4FF; border-radius: 16px 16px 4px 16px; }
+.msg.mean { background: #FFE3E6; }
+@keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.chat-input { margin: 0 12px 10px; background: #fff; border-radius: 999px; padding: 6px 16px; font-size: 14px; color: #A6A3C2; box-shadow: 0 0 0 2px var(--line); }
+
+/* Art */
+.sc-art { height: 100%; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: #FCEFF6; }
+.canvas { background: #fff; border-radius: 10px; padding: 8px; box-shadow: 0 2px 0 #F1CFE2; }
+.canvas img { width: 100%; height: 120px; object-fit: contain; }
+.canvas figcaption { font-size: 12px; color: #6B6890; padding-top: 4px; text-align: right; }
+.art-msg { display: flex; gap: 8px; align-items: flex-start; }
+.art-msg p { background: #fff; border-radius: 4px 16px 16px 16px; padding: 8px 12px; font-size: 14.5px; line-height: 1.3; }
+.art-msg b { display: block; font-size: 12px; color: #6B6890; }
+
+/* Timer */
+.sc-timer { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: #FFF6E3; text-align: center; }
+.ring { position: relative; width: 104px; height: 104px; animation: ring-shake 1.6s ease-in-out infinite; }
+@keyframes ring-shake { 0%, 60%, 100% { transform: rotate(0); } 65% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } 85% { transform: rotate(-3deg); } }
+.ring svg { width: 100%; height: 100%; }
+.ring-num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-head); font-weight: 600; font-size: 30px; color: #C2410C; }
+.timer-title { font-family: var(--f-head); font-weight: 600; font-size: 21px; }
+.timer-sub { font-size: 14.5px; color: #5A5680; }
+.paused { margin-top: 6px; background: #fff; border-radius: 999px; padding: 6px 16px; font-size: 14px; font-weight: 700; box-shadow: 0 0 0 2px #F6DFAE; }
+
+/* Photo post */
+.sc-photo { height: 100%; display: grid; place-items: center; background: #E6F6F3; }
+.post { width: 250px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 0 #C6E9E3; }
+.post-head { padding: 7px 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; }
+.post-head span { color: #13A08F; }
+.photo-wrap { position: relative; }
+.photo-wrap img { width: 100%; height: auto; }
+.post-cap { padding: 7px 12px 9px; font-size: 14px; }
+.hint-ring {
+  position: absolute; transform: translate(-50%, -50%); border: 4px solid #FF3D7F; border-radius: 50%;
+  opacity: 0; transition: opacity .3s;
+}
+.solved .hint-ring { opacity: 1; animation: pulse 1.2s ease-in-out 3; }
+@keyframes pulse { 50% { transform: translate(-50%, -50%) scale(1.12); } }
+.r1 { left: 70.25%; top: 50.4%; width: 18%; height: 26%; }
+.r2 { left: 17%; top: 27.5%; width: 34%; height: 22%; }
+
+/* Video */
+.sc-video { height: 100%; display: flex; flex-direction: column; background: #FFF0EA; }
+.player { position: relative; }
+.player img { width: 100%; height: 132px; object-fit: cover; object-position: center 28%; }
+.play { position: absolute; left: 34px; bottom: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,.45); color: #fff; display: grid; place-items: center; font-size: 18px; padding-left: 4px; }
+.vbar { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(255,255,255,.4); }
+.vbar span { display: block; width: 35%; height: 100%; background: #FF3D7F; }
+.vmeta { padding: 6px 12px 2px; }
+.vmeta b { display: block; font-size: 15px; }
+.vmeta small { font-size: 12px; color: #6B6890; }
+.comments { padding: 4px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.comments b { margin-right: 6px; }
+.comments .you { background: #fff; border-radius: 999px; padding: 4px 14px; color: #A6A3C2; box-shadow: 0 0 0 2px var(--line); }
+
+/* Store */
+.sc-store { height: 100%; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #E5F4F8; }
+.store-card { display: flex; gap: 14px; align-items: center; background: #fff; border-radius: 14px; padding: 12px; }
+.store-thumb { width: 80px; height: 80px; border-radius: 22px; object-fit: cover; }
+.store-card h3 { font-family: var(--f-head); font-weight: 600; font-size: 21px; }
+.store-meta { font-size: 13.5px; color: #5A5680; margin: 2px 0 8px; }
+.store-get { display: inline-block; background: #0A8FB0; color: #fff; font-weight: 700; padding: 6px 22px; border-radius: 999px; font-size: 14px; }
+.perm { background: #fff; border-radius: 14px; padding: 12px 16px; }
+.perm-title { font-weight: 700; font-size: 14.5px; margin-bottom: 6px; }
+.perm ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 14px; }
+
+/* ---------- Password Lab ---------- */
+.pw-main { flex: 0 0 520px; min-width: 0; background: #fff; border-radius: 14px; box-shadow: 0 0 0 2px var(--line); padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; }
+.pw-lead { font-size: 14px; line-height: 1.35; }
+.pw-box { min-height: 50px; border-radius: 12px; border: 2px dashed #C9C0EA; background: #FAF8FF; display: flex; align-items: center; gap: 4px; padding: 6px 8px; position: relative; }
+.pw-placeholder { color: #A6A3C2; font-size: 14px; padding-left: 4px; }
+.meter { height: 14px; border-radius: 999px; background: #EEEAF8; overflow: hidden; }
+.meter-fill { height: 100%; width: 0; border-radius: 999px; background: #E25563; transition: width .35s ease, background-color .35s; }
+.meter-label { font-size: 13.5px; font-weight: 700; margin-top: -4px; }
+.tile-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tile-row-label { width: 60px; flex: none; font-size: 13px; font-weight: 700; color: #6B6890; }
+.tile { padding: 5px 10px; border-radius: 10px; font-weight: 700; font-size: 14.5px; transition: transform .08s; }
+.tile:active { transform: translateY(2px); }
+.tile:disabled { opacity: .3; cursor: default; transform: none; }
+.tile.word { background: #E4DCFF; box-shadow: 0 3px 0 #C4B5F5; }
+.tile.num { background: #D3F1E3; box-shadow: 0 3px 0 #A6DDC3; }
+.tile.sym { background: #FFE2C4; box-shadow: 0 3px 0 #F3C38F; min-width: 34px; }
+.pw-box .tile { font-size: 14px; padding: 5px 9px; animation: pop .3s; }
+.pw-note { font-size: 12px; color: #6B6890; margin-top: auto; }
+.checks { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; background: #fff; border-radius: 14px; padding: 10px 12px; box-shadow: 0 0 0 2px var(--line); }
+.checks li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.checks li::before { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #C9C0EA; flex: none; }
+.checks li.met::before { content: "✓"; border-color: var(--good); background: var(--good); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.checks li.bad::before { content: "!"; border-color: var(--nudge); background: var(--nudge); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.pw-panel .btn-primary { align-self: flex-start; }
+
+/* ---------- Certificate ---------- */
+.cert {
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 14px 30px;
+  background: radial-gradient(circle at 50% 0%, #FFE7A3 0 120px, transparent 121px), var(--wall);
+}
+.cert-badges { display: flex; gap: 6px; }
+.cert-badges span {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--c); display: grid; place-items: center;
+  outline: 1.5px dashed var(--stitch); outline-offset: -4px; opacity: 0; animation: drop .45s forwards;
+}
+.cert-badges img { width: 20px; height: 20px; }
+@keyframes drop { from { opacity: 0; transform: translateY(-14px) scale(.5); } to { opacity: 1; transform: none; } }
+.cert h2 { font-family: var(--f-head); font-weight: 600; font-size: 32px; }
+.cert-lead { font-size: 15px; }
+.cert-rules { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 26px; text-align: left; background: #fff; border-radius: 14px; padding: 12px 20px; box-shadow: 0 0 0 2px #F1E2B8; counter-reset: r; }
+.cert-rules li { font-size: 14px; counter-increment: r; display: flex; gap: 8px; }
+.cert-rules li::before { content: counter(r); width: 20px; height: 20px; flex: none; border-radius: 50%; background: var(--grape); color: #fff; font-size: 11.5px; font-weight: 700; display: grid; place-items: center; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .msg, .cert-badges span { opacity: 1; }
+}
+
+</style>
+</head>
+<body>
+  <main id="stage" aria-label="Netizen Badge Quest game">
+
+    <section class="sash" aria-label="My badges">
+      <div class="sash-head"><h2>My badges</h2><span class="sash-count" id="sash-count">0 of 10</span></div>
+      <ul class="sash-grid" id="sash-grid"></ul>
+    </section>
+
+    <section class="tablet" aria-label="Tablet">
+      <div class="screen">
+        <div class="status">
+          <span>My Tablet</span>
+          <span id="clock"></span>
+          <span class="status-right">
+            <button class="mute" id="mute" aria-label="Sound on. Turn sound off">🔊</button>
+            <span class="battery" aria-hidden="true"></span>
+          </span>
+        </div>
+        <div class="screen-body" id="screen-body"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+/* =========================================================
+   Netizen Badge Quest — scenario data (L5 Digital Citizenship)
+   Edit this file to change rules, wording, choices or order.
+   Each scenario = one app on the tablet = one badge.
+   choices[].ok  -> true for the good choice
+   choices[].why -> short reason shown in the soft nudge
+   ========================================================= */
+window.NBQ_DATA = {
+  title: "Netizen Badge Quest",
+  lesson: "Lesson 5 · Digital Citizenship",
+  scenarios: [
+    {
+      id: "popup", n: 1, app: "Game Zone", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTE4IDIwaDI4YTE0IDE0IDAgMCAxIDE0IDE0djBhMTAgMTAgMCAwIDEtMTggNkgyMmExMCAxMCAwIDAgMS0xOC02djBhMTQgMTQgMCAwIDEgMTQtMTR6Ii8+PHBhdGggZD0iTTE4IDI4djEwTTEzIDMzaDEwIi8+PC9nPjxjaXJjbGUgY3g9IjQyIiBjeT0iMzAiIHI9IjMuMiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjQ5IiBjeT0iMzYiIHI9IjMuMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPgo=", color: "#D93A50",
+      rule: "Don't click flashy pop-ups", badge: "Pop-up Spotter", type: "popup",
+      question: "A pop-up says you won a prize! What do you do?",
+      choices: [
+        { text: "Tap CLAIM NOW to get my prize", ok: false,
+          why: "Prizes in pop-ups are usually tricks. Tapping can bring viruses or ask for private info." },
+        { text: "Close it and tell a grown-up if it comes back", ok: true },
+        { text: "Type my name and address to claim it", ok: false,
+          why: "Never type your details into a pop-up. Real prizes don't arrive this way." }
+      ],
+      success: "Flashy pop-ups are often tricks. Closing them keeps you and your tablet safe."
+    },
+    {
+      id: "stranger", n: 2, app: "Chat Room", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTEwIDE0aDQ0YTQgNCAwIDAgMSA0IDR2MjRhNCA0IDAgMCAxLTQgNEgyNmwtMTIgOXYtOWgtNGE0IDQgMCAwIDEtNC00VjE4YTQgNCAwIDAgMSA0LTR6Ii8+PGNpcmNsZSBjeD0iMjIiIGN5PSIzMCIgcj0iMy40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMCIgcj0iMy40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIzMCIgcj0iMy40IiBmaWxsPSIjZmZmIi8+PC9zdmc+Cg==", color: "#2E7BD9",
+      rule: "Don't share with strangers online", badge: "Stranger Safe", type: "chat",
+      chat: {
+        name: "StarPlayer_99", sub: "Not in your contacts", avatar: "?", color: "#8A94A6",
+        msgs: [
+          { text: "hi!! im 9 too 😊" },
+          { text: "which school do u go to?", key: true },
+          { text: "send me a pic of u!", key: true }
+        ]
+      },
+      question: "Someone you don't know is asking questions. What do you do?",
+      choices: [
+        { text: "Tell them my school's name", ok: false,
+          why: "Your school is personal info. People online may not be who they say they are." },
+        { text: "Don't reply, and show a trusted adult", ok: true },
+        { text: "Send a photo so we can be friends", ok: false,
+          why: "Photos of you are private. Never send them to someone you don't know in real life." }
+      ],
+      success: "People online may not be who they say. Telling a trusted adult is the smart move."
+    },
+    {
+      id: "art", n: 3, app: "Art Studio", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTMyIDhhMjQgMjQgMCAxIDAgMCA0OGM0IDAgNi0zIDQtNnMwLTcgNS03aDVjNiAwIDEwLTQgMTAtMTBDNTYgMTkgNDUgOCAzMiA4eiIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iMzAiIHI9IjMuNiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjI2IiBjeT0iMTkiIHI9IjMuNiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM4IiBjeT0iMTgiIHI9IjMuNiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjQ2IiBjeT0iMjciIHI9IjMuNiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPgo=", color: "#D54BA0",
+      rule: "Ask before sharing others' work", badge: "Credit Keeper", type: "art",
+      question: "Kabir wants to post Riya's drawing. What do you say?",
+      choices: [
+        { text: "Sure, let's say we drew it!", ok: false,
+          why: "Taking credit for someone else's work isn't fair. Riya made it!" },
+        { text: "Let's ask Riya first, and say she drew it", ok: true },
+        { text: "Post it now. She won't mind", ok: false,
+          why: "We can't know until we ask. Riya gets to decide where her art goes." }
+      ],
+      success: "Other people's work belongs to them. Ask first, and always give credit."
+    },
+    {
+      id: "timer", n: 4, app: "Play Timer", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzNiIgcj0iMjEiLz48cGF0aCBkPSJNMjYgOGgxMk0zMiA4djdNMzIgMzZWMjRNMzIgMzZsOCA2TTUwIDE2bDQtNCIvPjwvZz48L3N2Zz4K", color: "#E59A0E",
+      rule: "Balance your screen time", badge: "Time Balancer", type: "timer",
+      question: "Your play time is up, but your level isn't finished. What now?",
+      choices: [
+        { text: "Turn off the timer and keep playing", ok: false,
+          why: "Timers give your eyes, body and brain a rest. Switching them off isn't the answer." },
+        { text: "Save my game, then go play outside or read", ok: true },
+        { text: "Play 'just one more' level… again and again", ok: false,
+          why: "'Just one more' can turn into hours. Stop when time's up. Your game will wait!" }
+      ],
+      success: "Screens are fun, and so are breaks! Balance keeps you healthy and happy."
+    },
+    {
+      id: "photo", n: 5, app: "Photos", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iNyIgeT0iMTIiIHdpZHRoPSI1MCIgaGVpZ2h0PSI0MCIgcng9IjYiLz48cGF0aCBkPSJNOSA0NmwxNS0xNSAxMSAxMSA3LTcgMTMgMTMiLz48L2c+PGNpcmNsZSBjeD0iNDQiIGN5PSIyNCIgcj0iNSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPgo=", color: "#13A08F",
+      rule: "Keep personal info private", badge: "Privacy Pro", type: "photo",
+      question: "You want to post this photo online. Look closely! What should you do?",
+      choices: [
+        { text: "Post it. It's a nice photo!", ok: false,
+          why: "Look again: the house number and street sign show where you live." },
+        { text: "Pick a photo that doesn't show where I live", ok: true },
+        { text: "Post it and add my address in the caption", ok: false,
+          why: "Your address is private info. Never share it online." }
+      ],
+      success: "You spotted it! House numbers, street names and school names are private."
+    },
+    {
+      id: "password", n: 6, app: "Password Lab", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMTIiIHk9IjI4IiB3aWR0aD0iNDAiIGhlaWdodD0iMjgiIHJ4PSI2Ii8+PHBhdGggZD0iTTIwIDI4di04YTEyIDEyIDAgMCAxIDI0IDB2OCIvPjxwYXRoIGQ9Ik0zMiAzOXY3Ii8+PC9nPjxjaXJjbGUgY3g9IjMyIiBjeT0iMzgiIHI9IjQiIGZpbGw9IiNmZmYiLz48L3N2Zz4K", color: "#7A4FE0",
+      rule: "Make strong passwords", badge: "Password Builder", type: "password",
+      success: "Strong passwords mix fun words, numbers and symbols, and never use your name or birthday."
+    },
+    {
+      id: "secret", n: 7, app: "Messages", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iNyIgeT0iMTQiIHdpZHRoPSI1MCIgaGVpZ2h0PSIzNiIgcng9IjYiLz48cGF0aCBkPSJNOSAxOGwyMyAxOCAyMy0xOCIvPjwvZz48L3N2Zz4K", color: "#2E9E4F",
+      rule: "Keep passwords secret", badge: "Secret Keeper", type: "chat",
+      chat: {
+        name: "Aarav", sub: "Best friend", avatar: "A", color: "#F2643C",
+        msgs: [
+          { text: "hey!! can u tell me ur game password?", key: true },
+          { text: "i just want to collect coins for u 😁" },
+          { text: "promise i won't tell anyone" }
+        ]
+      },
+      question: "Your best friend asks for your password. What do you say?",
+      choices: [
+        { text: "Okay, because you're my best friend", ok: false,
+          why: "Even best friends shouldn't know your password. Only you and your parents should." },
+        { text: "Sorry! Passwords are private, even with friends", ok: true },
+        { text: "I'll give you a hint so you can guess it", ok: false,
+          why: "A hint makes your password easy to guess. Keep all of it secret." }
+      ],
+      success: "A password is like a toothbrush: don't share it! Only you and your grown-ups should know it."
+    },
+    {
+      id: "kind", n: 8, app: "Class Videos", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3QgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgeD0iNiIgeT0iMTIiIHdpZHRoPSI1MiIgaGVpZ2h0PSIzOCIgcng9IjciLz48cGF0aCBkPSJNMjcgMjJ2MThsMTUtOXoiIGZpbGw9IiNmZmYiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNMjAgNTdoMjQiLz48L3N2Zz4K", color: "#F2643C",
+      rule: "Be kind online", badge: "Kindness Star", type: "video",
+      question: "Meera posted her first dance video. Which comment will you post?",
+      choices: [
+        { text: "LOL that's so bad 😂", ok: false,
+          why: "That could really hurt Meera. Words online can sting just like words in person." },
+        { text: "Great moves, Meera! Brave of you to share 🌟", ok: true },
+        { text: "Share it so everyone can laugh", ok: false,
+          why: "Spreading something to laugh at someone is unkind. Treat others how you'd like to be treated." }
+      ],
+      success: "Kind words online make the internet a happier place for everyone."
+    },
+    {
+      id: "speakup", n: 9, app: "Class Group", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMjMiIGN5PSIyMiIgcj0iOCIvPjxjaXJjbGUgY3g9IjQzIiBjeT0iMjQiIHI9IjciLz48cGF0aCBkPSJNOCA1MmMwLTkgNy0xNiAxNS0xNnMxNSA3IDE1IDE2Ii8+PHBhdGggZD0iTTM4IDM4YzItMiA0LTMgNi0zIDcgMCAxMiA2IDEyIDE0Ii8+PC9nPjwvc3ZnPgo=", color: "#56657A",
+      rule: "Tell a trusted adult", badge: "Speak-Up Hero", type: "chat",
+      chat: {
+        name: "Class 3B Gamers", sub: "6 members", avatar: "3B", color: "#56657A", group: true,
+        msgs: [
+          { from: "Ishaan", text: "who's playing tonight? 🎮" },
+          { from: "You", text: "me!!", mine: true },
+          { from: "unknown_kid", text: "nobody wants u here. LEAVE.", mean: true, key: true }
+        ]
+      },
+      question: "Someone sent you a mean message, and it makes you feel bad. What do you do?",
+      choices: [
+        { text: "Send an even meaner message back", ok: false,
+          why: "Being mean back can make things worse. You don't have to fight it alone." },
+        { text: "Don't reply. Save it and tell a trusted adult", ok: true },
+        { text: "Keep it a secret and feel sad alone", ok: false,
+          why: "You don't have to handle this alone. A trusted adult can help make it stop." }
+      ],
+      success: "Speaking up is brave. Grown-ups can help when something online feels wrong."
+    },
+    {
+      id: "store", n: 10, app: "App Store", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDIyaDQwbC0zIDMySDE1eiIvPjxwYXRoIGQ9Ik0yMyAyMnYtNGE5IDkgMCAwIDEgMTggMHY0Ii8+PHBhdGggZD0iTTMyIDMwdjE2TTI1IDQwbDcgNyA3LTciLz48L2c+PC9zdmc+Cg==", color: "#0A8FB0",
+      rule: "Ask before you download", badge: "Smart Downloader", type: "store",
+      question: "A free game wants your camera, contacts and location. What do you do?",
+      choices: [
+        { text: "Tap GET right away. It's free!", ok: false,
+          why: "Free apps can still collect your info or ask for money later. Check first." },
+        { text: "Ask a parent or teacher before downloading", ok: true },
+        { text: "Download it and tap 'Allow' on everything", ok: false,
+          why: "'Allow' on everything lets an app see private things. A grown-up can help you choose." }
+      ],
+      success: "Asking before you download keeps you, your info and your tablet safe."
+    }
+  ],
+
+  /* Password Lab tiles. trap:true tiles are easy-to-guess on purpose. */
+  passwordTiles: {
+    word: [
+      { t: "Mango" }, { t: "Rocket" }, { t: "Purple" }, { t: "Tiger" },
+      { t: "password", trap: true, warn: "\"password\" is one of the first words people guess. Tap it in the box to take it out." }
+    ],
+    num: [
+      { t: "7" }, { t: "42" }, { t: "315" },
+      { t: "123", trap: true, warn: "\"123\" is super easy to guess. Pick a different number." }
+    ],
+    sym: [ { t: "!" }, { t: "#" }, { t: "@" }, { t: "*" } ]
+  },
+  passwordMaxTiles: 6
+};
+
+</script>
+  <script>
+/* Netizen Badge Quest — tiny Web Audio sound effects (no audio files needed) */
+window.NBQSound = (function () {
+  var ctx = null, muted = false;
+
+  function ac() {
+    if (!ctx) {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      ctx = new C();
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+
+  function tone(freq, dur, type, delay, vol) {
+    if (muted) return;
+    var c = ac(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    var t = c.currentTime + (delay || 0);
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  return {
+    tap:     function () { tone(660, 0.08, "triangle", 0, 0.07); },
+    nudge:   function () { tone(392, 0.18, "sine", 0, 0.11); tone(330, 0.26, "sine", 0.14, 0.11); },
+    badge:   function () { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.22, "triangle", i * 0.09, 0.13); }); },
+    fanfare: function () { [523, 659, 784, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.3, "triangle", i * 0.13, 0.13); }); },
+    setMuted: function (m) { muted = m; },
+    isMuted:  function () { return muted; }
+  };
+})();
+
+</script>
+  <script>
+/* Netizen Badge Quest — Password Lab (rule 6)
+   Players build a password from word / number / symbol tiles.
+   Nothing is ever typed. A strength meter fills as checks are met. */
+window.NBQPassword = (function () {
+  var OWL = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj4KICA8cGF0aCBkPSJNMjggNDAgTDIyIDEyIEw0NiAzMCBaIiBmaWxsPSIjMUU4QzgwIi8+CiAgPHBhdGggZD0iTTkyIDQwIEw5OCAxMiBMNzQgMzAgWiIgZmlsbD0iIzFFOEM4MCIvPgogIDxlbGxpcHNlIGN4PSI2MCIgY3k9IjY4IiByeD0iNDAiIHJ5PSI0NCIgZmlsbD0iIzJCQjNBMyIvPgogIDxlbGxpcHNlIGN4PSIyNCIgY3k9Ijc4IiByeD0iMTAiIHJ5PSIyMiIgZmlsbD0iIzFFOEM4MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTIgMjQgNzgpIi8+CiAgPGVsbGlwc2UgY3g9Ijk2IiBjeT0iNzgiIHJ4PSIxMCIgcnk9IjIyIiBmaWxsPSIjMUU4QzgwIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTIgOTYgNzgpIi8+CiAgPGVsbGlwc2UgY3g9IjYwIiBjeT0iODYiIHJ4PSIyNCIgcnk9IjIyIiBmaWxsPSIjRkZGM0M5Ii8+CiAgPHBhdGggZD0iTTQ4IDgwIHE0IDQgOCAwIE02MCA4OCBxNCA0IDggMCBNNDggOTYgcTQgNCA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0U4RDlBMCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ0IiBjeT0iNTQiIHI9IjE2IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNzYiIGN5PSI1NCIgcj0iMTYiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI0NiIgY3k9IjU2IiByPSI3LjUiIGZpbGw9IiMxQjE2NDAiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjU2IiByPSI3LjUiIGZpbGw9IiMxQjE2NDAiLz4KICA8Y2lyY2xlIGN4PSI0OC41IiBjeT0iNTMiIHI9IjIuNiIgZmlsbD0iI2ZmZiIvPgogIDxjaXJjbGUgY3g9Ijc2LjUiIGN5PSI1MyIgcj0iMi42IiBmaWxsPSIjZmZmIi8+CiAgPHBhdGggZD0iTTU0IDY2IEw2NiA2NiBMNjAgNzUgWiIgZmlsbD0iI0Y3QTkyOCIvPgogIDxjaXJjbGUgY3g9IjgyIiBjeT0iOTQiIHI9IjkiIGZpbGw9IiNGRkUyN0EiIHN0cm9rZT0iI0UwQjUzQSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHBhdGggZD0iTTgyIDg5IGwxLjYgMy4zIDMuNi41LTIuNiAyLjUuNiAzLjYtMy4yLTEuNy0zLjIgMS43LjYtMy42LTIuNi0yLjUgMy42LS41eiIgZmlsbD0iI0UwOEEwMCIvPgogIDxwYXRoIGQ9Ik00NiAxMTAgbC00IDYgTTUwIDExMCB2NyBNNTQgMTEwIGw0IDYgTTY2IDExMCBsLTQgNiBNNzAgMTEwIHY3IE03NCAxMTAgbDQgNiIgc3Ryb2tlPSIjRjdBOTI4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K";
+
+  var CHECKS = [
+    { k: "words", label: "Two fun words" },
+    { k: "num",   label: "A number" },
+    { k: "sym",   label: "A symbol" },
+    { k: "easy",  label: "Nothing easy to guess" }
+  ];
+  var LEVELS = [
+    { label: "Empty",          color: "#E25563" },
+    { label: "Weak",           color: "#E25563" },
+    { label: "Okay",           color: "#F0A020" },
+    { label: "Getting there",  color: "#8BC34A" },
+    { label: "Strong!",        color: "#1E9E63" }
+  ];
+
+  function render(body, s, data, api) {
+    var tiles = [];          // { t, kind, trap, warn, key }
+    var max = data.passwordMaxTiles || 6;
+    var T = data.passwordTiles;
+
+    function row(kind, label) {
+      return '<div class="tile-row"><span class="tile-row-label">' + label + '</span>' +
+        T[kind].map(function (x, i) {
+          return '<button class="tile ' + kind + '" data-kind="' + kind + '" data-i="' + i + '">' + x.t + '</button>';
+        }).join("") + '</div>';
+    }
+
+    body.innerHTML =
+      '<div class="pw-main">' +
+        '<p class="pw-lead">Tap tiles to build a password. Tap one in the box to remove it.</p>' +
+        '<div class="pw-box" aria-live="polite" aria-label="Your password"><span class="pw-placeholder">Your password appears here</span></div>' +
+        '<div class="meter" role="meter" aria-label="Password strength" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><div class="meter-fill"></div></div>' +
+        '<p class="meter-label">Strength: Empty</p>' +
+        row("word", "Words") + row("num", "Numbers") + row("sym", "Symbols") +
+        '<p class="pw-note">Practice only. Make your real passwords at home with a grown-up.</p>' +
+      '</div>' +
+      '<aside class="panel pw-panel">' +
+        window.NBQAskCard('Make it strong! Never use your name or birthday.') +
+        '<ul class="checks">' + CHECKS.map(function (c) { return '<li data-k="' + c.k + '">' + c.label + '</li>'; }).join("") + '</ul>' +
+        '<div class="feedback" aria-live="polite"></div>' +
+        '<button class="btn-primary pw-check" disabled>Lock it in</button>' +
+      '</aside>';
+
+    var box = body.querySelector(".pw-box");
+    var fill = body.querySelector(".meter-fill");
+    var meter = body.querySelector(".meter");
+    var mLabel = body.querySelector(".meter-label");
+    var fb = body.querySelector(".feedback");
+    var btn = body.querySelector(".pw-check");
+    var panel = body.querySelector(".pw-panel");
+
+    function evaluate() {
+      var goodWords = tiles.filter(function (x) { return x.kind === "word" && !x.trap; }).length;
+      var res = {
+        words: goodWords >= 2,
+        num: tiles.some(function (x) { return x.kind === "num" && !x.trap; }),
+        sym: tiles.some(function (x) { return x.kind === "sym"; }),
+        easy: tiles.length > 0 && !tiles.some(function (x) { return x.trap; })
+      };
+      var score = (res.words ? 1 : 0) + (res.num ? 1 : 0) + (res.sym ? 1 : 0) + (res.easy ? 1 : 0);
+      var trapped = tiles.some(function (x) { return x.trap; });
+      if (tiles.length === 0) score = 0;
+      if (trapped) score = Math.min(score, 1);
+      return { res: res, score: score, trapped: trapped };
+    }
+
+    function update(lastAdded) {
+      box.innerHTML = tiles.length
+        ? tiles.map(function (x, i) { return '<button class="tile ' + x.kind + '" data-slot="' + i + '" aria-label="Remove ' + x.t + '">' + x.t + '</button>'; }).join("")
+        : '<span class="pw-placeholder">Your password appears here</span>';
+
+      body.querySelectorAll(".tile-row .tile").forEach(function (b) {
+        var key = b.dataset.kind + b.dataset.i;
+        b.disabled = tiles.length >= max || tiles.some(function (x) { return x.key === key; });
+      });
+
+      var e = evaluate();
+      CHECKS.forEach(function (c) {
+        var li = body.querySelector('.checks li[data-k="' + c.k + '"]');
+        li.classList.toggle("met", !!e.res[c.k]);
+        li.classList.toggle("bad", c.k === "easy" && e.trapped);
+      });
+      var lvl = e.trapped ? { label: "Easy to guess", color: "#E25563" } : LEVELS[e.score];
+      fill.style.width = (e.score / 4 * 100) + "%";
+      fill.style.backgroundColor = lvl.color;
+      meter.setAttribute("aria-valuenow", e.score);
+      mLabel.textContent = "Strength: " + lvl.label;
+      btn.disabled = e.score < 4;
+
+      if (lastAdded && lastAdded.trap) {
+        api.sound.nudge();
+        fb.innerHTML = '<div class="nudge"><strong>Hmm, think again.</strong>' + lastAdded.warn + '</div>';
+      } else if (!e.trapped) {
+        fb.innerHTML = tiles.length >= max && e.score < 4
+          ? '<div class="nudge"><strong>The box is full.</strong>Tap a tile in the box to swap it out.</div>'
+          : "";
+      }
+    }
+
+    body.addEventListener("click", function (ev) {
+      var b = ev.target.closest(".tile");
+      if (!b || b.disabled) return;
+      if (b.dataset.slot !== undefined) {
+        tiles.splice(+b.dataset.slot, 1);
+        api.sound.tap();
+        update();
+        return;
+      }
+      var src = T[b.dataset.kind][+b.dataset.i];
+      var t = { t: src.t, kind: b.dataset.kind, trap: !!src.trap, warn: src.warn, key: b.dataset.kind + b.dataset.i };
+      tiles.push(t);
+      if (!t.trap) api.sound.tap();
+      update(t);
+    });
+
+    btn.addEventListener("click", function () {
+      if (evaluate().score < 4) return;
+      body.querySelectorAll(".tile").forEach(function (b) { b.disabled = true; });
+      api.win(panel);
+    });
+  }
+
+  return { render: render };
+})();
+
+</script>
+  <script>
+/* Netizen Badge Quest — confetti bursts
+   NBQConfetti.burst(element, colour, options) shoots confetti and a shine ring
+   out of the centre of `element`. Particles live in #stage, so they work
+   wherever the badge is (win card, badge strip, certificate). */
+window.NBQConfetti = (function () {
+  var STAGE_W = 1130;
+  var PALETTE = ["#FFE27A", "#FF4FA3", "#2E7BD9", "#1E9E63", "#F2643C", "#FFFFFF", "#7A4FE0"];
+
+  function reduced() {
+    return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function burst(el, colour, opts) {
+    if (!el || reduced()) return;
+    opts = opts || {};
+    var count = opts.count || 30;
+    var spread = opts.spread || 110;      // how far pieces fly (px)
+    var size = opts.size || 1;            // piece size multiplier
+    var stage = document.getElementById("stage");
+    var sr = stage.getBoundingClientRect();
+    var scale = sr.width / STAGE_W;
+    var r = el.getBoundingClientRect();
+    var cx = (r.left + r.width / 2 - sr.left) / scale;
+    var cy = (r.top + r.height / 2 - sr.top) / scale;
+
+    // shine ring
+    var ring = document.createElement("span");
+    ring.className = "burst-ring";
+    var d = Math.max(r.width, r.height) / scale;
+    ring.style.cssText = "left:" + cx + "px;top:" + cy + "px;width:" + d + "px;height:" + d + "px;border-color:" + colour;
+    stage.appendChild(ring);
+    ring.animate(
+      [{ transform: "translate(-50%,-50%) scale(1)", opacity: 0.9 },
+       { transform: "translate(-50%,-50%) scale(2.4)", opacity: 0 }],
+      { duration: 650, easing: "ease-out" }
+    ).onfinish = function () { ring.remove(); };
+
+    // confetti pieces
+    var colours = [colour, colour].concat(PALETTE);
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement("span");
+      var round = Math.random() < 0.35;
+      var w = (round ? 7 : 5 + Math.random() * 4) * size;
+      var h = (round ? 7 : 9 + Math.random() * 5) * size;
+      p.className = "confetti";
+      p.style.cssText = "left:" + cx + "px;top:" + cy + "px;width:" + w + "px;height:" + h + "px;" +
+        "background:" + colours[i % colours.length] + ";border-radius:" + (round ? "50%" : "2px");
+      stage.appendChild(p);
+
+      var ang = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+      var dist = spread * (0.55 + Math.random() * 0.6);
+      var dx = Math.cos(ang) * dist;
+      var dy = Math.sin(ang) * dist - spread * 0.25;   // a little upward lift
+      var rot = (Math.random() * 720 - 360);
+      var fall = 40 + Math.random() * 50;              // gravity at the end
+
+      p.animate([
+        { transform: "translate(-50%,-50%) translate(0,0) rotate(0deg) scale(.4)", opacity: 1 },
+        { transform: "translate(-50%,-50%) translate(" + dx + "px," + dy + "px) rotate(" + rot / 2 + "deg) scale(1)", opacity: 1, offset: 0.45 },
+        { transform: "translate(-50%,-50%) translate(" + dx * 1.15 + "px," + (dy + fall) + "px) rotate(" + rot + "deg) scale(.9)", opacity: 0 }
+      ], {
+        duration: 1100 + Math.random() * 500,
+        delay: Math.random() * 80,
+        easing: "cubic-bezier(.15,.7,.4,1)",
+        fill: "forwards"
+      }).onfinish = (function (node) { return function () { node.remove(); }; })(p);
+    }
+  }
+
+  return { burst: burst };
+})();
+
+</script>
+  <script>
+/* =========================================================
+   Netizen Badge Quest — game engine
+   Screens: lock screen -> tablet home -> app scenario -> badge -> certificate
+   ========================================================= */
+(function () {
+  "use strict";
+
+  var DATA = window.NBQ_DATA;
+  var S = DATA.scenarios;
+  var SOUND = window.NBQSound;
+  var OWL = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj4KICA8cGF0aCBkPSJNMjggNDAgTDIyIDEyIEw0NiAzMCBaIiBmaWxsPSIjMUU4QzgwIi8+CiAgPHBhdGggZD0iTTkyIDQwIEw5OCAxMiBMNzQgMzAgWiIgZmlsbD0iIzFFOEM4MCIvPgogIDxlbGxpcHNlIGN4PSI2MCIgY3k9IjY4IiByeD0iNDAiIHJ5PSI0NCIgZmlsbD0iIzJCQjNBMyIvPgogIDxlbGxpcHNlIGN4PSIyNCIgY3k9Ijc4IiByeD0iMTAiIHJ5PSIyMiIgZmlsbD0iIzFFOEM4MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTIgMjQgNzgpIi8+CiAgPGVsbGlwc2UgY3g9Ijk2IiBjeT0iNzgiIHJ4PSIxMCIgcnk9IjIyIiBmaWxsPSIjMUU4QzgwIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTIgOTYgNzgpIi8+CiAgPGVsbGlwc2UgY3g9IjYwIiBjeT0iODYiIHJ4PSIyNCIgcnk9IjIyIiBmaWxsPSIjRkZGM0M5Ii8+CiAgPHBhdGggZD0iTTQ4IDgwIHE0IDQgOCAwIE02MCA4OCBxNCA0IDggMCBNNDggOTYgcTQgNCA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0U4RDlBMCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjQ0IiBjeT0iNTQiIHI9IjE2IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNzYiIGN5PSI1NCIgcj0iMTYiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI0NiIgY3k9IjU2IiByPSI3LjUiIGZpbGw9IiMxQjE2NDAiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjU2IiByPSI3LjUiIGZpbGw9IiMxQjE2NDAiLz4KICA8Y2lyY2xlIGN4PSI0OC41IiBjeT0iNTMiIHI9IjIuNiIgZmlsbD0iI2ZmZiIvPgogIDxjaXJjbGUgY3g9Ijc2LjUiIGN5PSI1MyIgcj0iMi42IiBmaWxsPSIjZmZmIi8+CiAgPHBhdGggZD0iTTU0IDY2IEw2NiA2NiBMNjAgNzUgWiIgZmlsbD0iI0Y3QTkyOCIvPgogIDxjaXJjbGUgY3g9IjgyIiBjeT0iOTQiIHI9IjkiIGZpbGw9IiNGRkUyN0EiIHN0cm9rZT0iI0UwQjUzQSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHBhdGggZD0iTTgyIDg5IGwxLjYgMy4zIDMuNi41LTIuNiAyLjUuNiAzLjYtMy4yLTEuNy0zLjIgMS43LjYtMy42LTIuNi0yLjUgMy42LS41eiIgZmlsbD0iI0UwOEEwMCIvPgogIDxwYXRoIGQ9Ik00NiAxMTAgbC00IDYgTTUwIDExMCB2NyBNNTQgMTEwIGw0IDYgTTY2IDExMCBsLTQgNiBNNzAgMTEwIHY3IE03NCAxMTAgbDQgNiIgc3Ryb2tlPSIjRjdBOTI4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K";
+  var STAGE_W = 1130, STAGE_H = 502;
+
+  var state = { earned: {}, count: 0, timers: [] };
+
+  var stage = document.getElementById("stage");
+  var sashGrid = document.getElementById("sash-grid");
+  var sashCount = document.getElementById("sash-count");
+  var body = document.getElementById("screen-body");
+  var clock = document.getElementById("clock");
+  var muteBtn = document.getElementById("mute");
+
+  /* ---------- helpers ---------- */
+  function byId(id) { for (var i = 0; i < S.length; i++) if (S[i].id === id) return S[i]; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function clearTimers() { state.timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); state.timers = []; }
+  function timeStr() { var d = new Date(); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+
+  function fit() {
+    var s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+  }
+
+  /* Move focus only for keyboard users, so mouse/touch players don't see focus rings jump around */
+  var usingKeyboard = false;
+  document.addEventListener("keydown", function (e) { if (e.key === "Tab" || e.key === "Enter" || e.key === " ") usingKeyboard = true; });
+  document.addEventListener("pointerdown", function () { usingKeyboard = false; });
+
+  function focusFirst(sel) {
+    if (!usingKeyboard) return;
+    var el = body.querySelector(sel);
+    if (el) el.focus({ preventScroll: true });
+  }
+
+  /* ---------- badge sash ---------- */
+  function renderSash(popId) {
+    sashGrid.innerHTML = S.map(function (s) {
+      var got = !!state.earned[s.id];
+      return '<li class="patch' + (got ? " earned" : "") + (popId === s.id ? " pop" : "") + '" data-id="' + s.id + '" style="--c:' + s.color + '" ' +
+        'aria-label="' + s.badge + (got ? ": earned" : ": not earned yet") + '">' +
+        '<span class="patch-disc"><img src="' + s.icon + '" alt=""></span>' +
+        '<span class="patch-name">' + s.badge + '</span></li>';
+    }).join("");
+    sashCount.textContent = state.count + " of " + S.length;
+  }
+
+  /* ---------- lock screen ---------- */
+  function renderLock() {
+    clearTimers();
+    var d = new Date();
+    body.innerHTML =
+      '<div class="lock">' +
+        '<p class="lock-time">' + timeStr() + '</p>' +
+        '<p class="lock-date">' + d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" }) + '</p>' +
+        '<img class="lock-owl" src="' + OWL + '" alt="Nettie the owl">' +
+        '<h1>' + DATA.title + '</h1>' +
+        '<p class="lock-lead">Explore this tablet and make smart, safe choices. Each good choice earns a badge. Can you collect all ' + S.length + '?</p>' +
+        '<button class="btn-primary" data-act="start">Start quest</button>' +
+      '</div>';
+    focusFirst("[data-act=start]");
+  }
+
+  /* ---------- home screen ---------- */
+  function renderHome() {
+    clearTimers();
+    var left = S.length - state.count;
+    var msg = state.count === 0
+      ? "Hi, I'm Nettie! Tap an app. Make a smart choice to earn its badge."
+      : left === 1 ? "Just one badge to go. You've got this!"
+      : "Nice work! " + left + " badges to go. Pick another app.";
+    body.innerHTML =
+      '<div class="home">' +
+        '<div class="home-top"><img class="home-owl" src="' + OWL + '" alt=""><p class="bubble">' + msg + '</p></div>' +
+        '<div class="app-grid">' + S.map(function (s) {
+          var done = !!state.earned[s.id];
+          return '<button class="app" data-app="' + s.id + '" style="--c:' + s.color + '" aria-label="' + s.app + (done ? ", badge earned" : "") + '">' +
+            '<span class="app-icon"><img src="' + s.icon + '" alt=""></span>' +
+            '<span class="app-name">' + s.app + '</span>' +
+            (done ? '<span class="app-done" aria-hidden="true">✓</span>' : "") + '</button>';
+        }).join("") + '</div>' +
+      '</div>';
+    focusFirst(".app");
+  }
+
+  /* ---------- scenes ---------- */
+  var SCENES = {
+    popup: function () {
+      return '<img class="fill" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODAgMzAwIj4KICA8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InNreSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzdDQzhGRiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0QzRjBGRiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPgogIDxyZWN0IHdpZHRoPSI0ODAiIGhlaWdodD0iMzAwIiBmaWxsPSJ1cmwoI3NreSkiLz4KICA8Y2lyY2xlIGN4PSI0MTAiIGN5PSI1NiIgcj0iMjgiIGZpbGw9IiNGRkQ4NEQiLz4KICA8ZyBmaWxsPSIjZmZmIj48ZWxsaXBzZSBjeD0iOTAiIGN5PSI2MiIgcng9IjM4IiByeT0iMTQiLz48ZWxsaXBzZSBjeD0iMTE1IiBjeT0iNTIiIHJ4PSIyMiIgcnk9IjE0Ii8+PGVsbGlwc2UgY3g9IjI5MCIgY3k9IjQyIiByeD0iMzAiIHJ5PSIxMSIvPjxlbGxpcHNlIGN4PSIzMDgiIGN5PSIzNiIgcng9IjE2IiByeT0iMTAiLz48L2c+CiAgPHBhdGggZD0iTTAgMjIwIFE4MCAxNjAgMTYwIDIxMCBUMzIwIDIwMCBUNDgwIDE5MCBWMzAwIEgwWiIgZmlsbD0iIzhGREI5QSIvPgogIDxwYXRoIGQ9Ik0wIDI1MCBRMTIwIDIxNSAyNDAgMjQ1IFQ0ODAgMjQwIFYzMDAgSDBaIiBmaWxsPSIjNURCQjcyIi8+CiAgPHJlY3QgeT0iMjYyIiB3aWR0aD0iNDgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjQTA2NzNEIi8+CiAgPHJlY3QgeT0iMjU2IiB3aWR0aD0iNDgwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjM0U5QjU3Ii8+CiAgPGcgZmlsbD0iIzhBNTUzMCI+PGNpcmNsZSBjeD0iNDAiIGN5PSIyODIiIHI9IjQiLz48Y2lyY2xlIGN4PSIxMzAiIGN5PSIyOTAiIHI9IjMiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSIyODAiIHI9IjQiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyODgiIHI9IjMiLz48L2c+CiAgPHJlY3QgeD0iMTIwIiB5PSIxNzIiIHdpZHRoPSI5MiIgaGVpZ2h0PSIxOCIgcng9IjQiIGZpbGw9IiNDOTgxM0YiLz48cmVjdCB4PSIxMjAiIHk9IjE3MiIgd2lkdGg9IjkyIiBoZWlnaHQ9IjYiIHJ4PSIzIiBmaWxsPSIjRTM5QjU1Ii8+CiAgPHJlY3QgeD0iMjkwIiB5PSIxMzAiIHdpZHRoPSIxMDQiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjQzk4MTNGIi8+PHJlY3QgeD0iMjkwIiB5PSIxMzAiIHdpZHRoPSIxMDQiIGhlaWdodD0iNiIgcng9IjMiIGZpbGw9IiNFMzlCNTUiLz4KICA8ZyBmaWxsPSIjRkZDOTNDIiBzdHJva2U9IiNFNTlCMDAiIHN0cm9rZS13aWR0aD0iMyI+PGNpcmNsZSBjeD0iMTQwIiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMTY2IiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMTkyIiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzE0IiBjeT0iMTEwIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzQwIiBjeT0iMTEwIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzY2IiBjeT0iMTEwIiByPSI4Ii8+PC9nPgogIDxyZWN0IHg9IjQ4IiB5PSIyMjIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIzMiIgcng9IjciIGZpbGw9IiNGRjVENzMiLz4KICA8Y2lyY2xlIGN4PSI2MiIgY3k9IjIxMCIgcj0iMTMiIGZpbGw9IiNBODZCM0MiLz4KICA8cGF0aCBkPSJNNDggMjA2IGExNCAxMiAwIDAgMSAyOCAwIHoiIGZpbGw9IiMzRDVBRkUiLz48cmVjdCB4PSI2MiIgeT0iMjAyIiB3aWR0aD0iMTgiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzRDVBRkUiLz4KICA8Y2lyY2xlIGN4PSI2NiIgY3k9IjIxMSIgcj0iMiIgZmlsbD0iIzFCMTY0MCIvPgogIDxwYXRoIGQ9Ik00MTAgMjU2IHEwIC0yNiAyMiAtMjYgcTIyIDAgMjIgMjZ6IiBmaWxsPSIjN0M0REZGIi8+PGNpcmNsZSBjeD0iNDI0IiBjeT0iMjQ0IiByPSIzIiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDQwIiBjeT0iMjQ0IiByPSIzIiBmaWxsPSIjZmZmIi8+CiAgPHRleHQgeD0iNTYiIHk9IjUyIiBmb250LWZhbWlseT0iVHJlYnVjaGV0IE1TLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMUIxNjQwIj7imIUgMSwyNDA8L3RleHQ+Cjwvc3ZnPgo=" alt="A colourful platform game">' +
+        '<div class="fake-popup key" role="img" aria-label="A pop-up says: You won! A free phone is waiting. Claim now.">' +
+          '<div class="fp-bar"><span>Special offer</span><span class="fp-x">✕</span></div>' +
+          '<p class="fp-big">YOU WON!</p>' +
+          '<p class="fp-small">A FREE phone is waiting for you! 🎁</p>' +
+          '<span class="fp-claim">CLAIM NOW</span>' +
+          '<p class="fp-tiny">Offer ends in <span class="fp-count">00:09</span></p>' +
+        '</div>';
+    },
+    chat: function (s) {
+      var c = s.chat;
+      return '<div class="sc-chat">' +
+        '<div class="chat-head"><span class="avatar" style="--a:' + c.color + '">' + c.avatar + '</span><div><b>' + c.name + '</b><small>' + c.sub + '</small></div></div>' +
+        '<div class="chat-log">' + c.msgs.map(function (m, i) {
+          return '<p class="msg' + (m.mine ? " mine" : "") + (m.mean ? " mean" : "") + (m.key ? " key" : "") + '" style="animation-delay:' + (0.3 + i * 0.7) + 's">' +
+            (c.group && !m.mine ? '<span class="from">' + m.from + '</span>' : "") + m.text + '</p>';
+        }).join("") + '</div>' +
+        '<div class="chat-input" aria-hidden="true">Type a message…</div>' +
+      '</div>';
+    },
+    art: function () {
+      return '<div class="sc-art">' +
+        '<figure class="canvas"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMjgwIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iI0ZGRkVGNiIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxMSI+CiAgICA8cGF0aCBkPSJNNzAgMjMyIEExMzAgMTMwIDAgMCAxIDMzMCAyMzIiIHN0cm9rZT0iI0YyNUM1NCIvPgogICAgPHBhdGggZD0iTTg3IDIzMiBBMTEzIDExMyAwIDAgMSAzMTMgMjMyIiBzdHJva2U9IiNGN0E1NDEiLz4KICAgIDxwYXRoIGQ9Ik0xMDQgMjMyIEE5NiA5NiAwIDAgMSAyOTYgMjMyIiBzdHJva2U9IiNGNENGM0EiLz4KICAgIDxwYXRoIGQ9Ik0xMjEgMjMyIEE3OSA3OSAwIDAgMSAyNzkgMjMyIiBzdHJva2U9IiM2Q0M1NkIiLz4KICAgIDxwYXRoIGQ9Ik0xMzggMjMyIEE2MiA2MiAwIDAgMSAyNjIgMjMyIiBzdHJva2U9IiM0RkEzRTgiLz4KICA8L2c+CiAgPGcgc3Ryb2tlPSIjRkZCNzAzIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTUyIDE0djEyTTUyIDc4djEyTTE0IDUyaDEyTTc4IDUyaDEyTTI1IDI1bDggOE03MSA3MWw4IDhNNzkgMjVsLTggOE0zMyA3MWwtOCA4Ii8+PC9nPgogIDxjaXJjbGUgY3g9IjUyIiBjeT0iNTIiIHI9IjIxIiBmaWxsPSIjRkZEMjNGIi8+CiAgPHBhdGggZD0iTTQ0IDUwIHEyLTMgNCAwIE01NiA1MCBxMi0zIDQgMCBNNDQgNTggcTggNyAxNiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiNDNDdGMDAiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzUyIDI1MiBWMTk2IiBzdHJva2U9IiMzQzlBM0YiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTM1MiAyMjYgcS0xNi0xMC0yMiA0IHExMiA2IDIyLTQiIGZpbGw9IiM1Q0JGNjAiLz4KICA8ZyBmaWxsPSIjRkY3QUI2Ij48Y2lyY2xlIGN4PSIzNTIiIGN5PSIxNzIiIHI9IjEwIi8+PGNpcmNsZSBjeD0iMzY2IiBjeT0iMTg0IiByPSIxMCIvPjxjaXJjbGUgY3g9IjM2MCIgY3k9IjIwMCIgcj0iMTAiLz48Y2lyY2xlIGN4PSIzNDQiIGN5PSIyMDAiIHI9IjEwIi8+PGNpcmNsZSBjeD0iMzM4IiBjeT0iMTg0IiByPSIxMCIvPjwvZz4KICA8Y2lyY2xlIGN4PSIzNTIiIGN5PSIxODciIHI9IjgiIGZpbGw9IiNGRkQyM0YiLz4KICA8cGF0aCBkPSJNMTAgMjYyIGw4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIgOC0xMiA4IDEyIDgtMTIgOCAxMiA4LTEyIDggMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8dGV4dCB4PSIzMDAiIHk9IjM4IiBmb250LWZhbWlseT0iQ29taWMgU2FucyBNUywgQ2hhbGtib2FyZCBTRSwgY3Vyc2l2ZSIgZm9udC1zaXplPSIyMiIgZmlsbD0iIzZBNEM5MyIgdHJhbnNmb3JtPSJyb3RhdGUoLTYgMzAwIDM4KSI+fiBSaXlhPC90ZXh0Pgo8L3N2Zz4K" alt="Riya\'s drawing of a rainbow, a smiling sun and a flower"><figcaption>by Riya, Class 3B</figcaption></figure>' +
+        '<div class="art-msg"><span class="avatar" style="--a:#E86A92">K</span><p class="key"><b>Kabir</b>Riya\'s drawing is SO good! Let\'s post it on the class page and say we made it 😄</p></div>' +
+      '</div>';
+    },
+    timer: function () {
+      return '<div class="sc-timer">' +
+        '<div class="ring key" role="img" aria-label="Timer at zero">' +
+          '<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="#fff" stroke="#F6DFAE" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#F2643C" stroke-width="10" stroke-dasharray="4 327" stroke-linecap="round" transform="rotate(-90 60 60)"/></svg>' +
+          '<span class="ring-num">00:00</span></div>' +
+        '<p class="timer-title">Play time is over! ⏰</p>' +
+        '<p class="timer-sub">You played Candy Racer for 1 hour today.</p>' +
+        '<p class="paused key">Paused on Level 7: almost finished!</p>' +
+      '</div>';
+    },
+    photo: function () {
+      return '<div class="sc-photo"><div class="post key">' +
+        '<div class="post-head">New post <span>Post</span></div>' +
+        '<div class="photo-wrap"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMjYwIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI2MCIgZmlsbD0iI0JGRTZGRiIvPgogIDxlbGxpcHNlIGN4PSIzMjAiIGN5PSI0MCIgcng9IjM0IiByeT0iMTIiIGZpbGw9IiNmZmYiLz48ZWxsaXBzZSBjeD0iODAiIGN5PSIzMCIgcng9IjI2IiByeT0iOSIgZmlsbD0iI2ZmZiIvPgogIDxyZWN0IHk9IjIwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzhGRDE4QiIvPgogIDxwYXRoIGQ9Ik0wIDIxNCBINDAwIFYyMzIgSDBaIiBmaWxsPSIjRDlEM0M3Ii8+CiAgPHJlY3QgeD0iMTUwIiB5PSI5MiIgd2lkdGg9IjE3MiIgaGVpZ2h0PSIxMTQiIGZpbGw9IiNGNkMxNzciLz4KICA8cGF0aCBkPSJNMTM4IDk2IEwyMzYgMzggTDMzNCA5NiBaIiBmaWxsPSIjRDk1MzRGIi8+CiAgPHJlY3QgeD0iMTY0IiB5PSIxMTQiIHdpZHRoPSIzOCIgaGVpZ2h0PSIzMiIgcng9IjMiIGZpbGw9IiNDREVCRkYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+CiAgPHBhdGggZD0iTTE4MyAxMTQgdjMyIE0xNjQgMTMwIGgzOCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSIyMTQiIHk9IjE0NCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjYyIiByeD0iMyIgZmlsbD0iIzdBNEEyQSIvPjxjaXJjbGUgY3g9IjI0NiIgY3k9IjE3NiIgcj0iMyIgZmlsbD0iI0Y0Q0YzQSIvPgogIDxyZWN0IHg9IjI2MiIgeT0iMTE4IiB3aWR0aD0iMzgiIGhlaWdodD0iMjYiIHJ4PSI0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMzYTNhM2EiIHN0cm9rZS13aWR0aD0iMi41Ii8+CiAgPHRleHQgeD0iMjgxIiB5PSIxMzgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSIxOSIgZmlsbD0iIzFCMTY0MCI+Mjc8L3RleHQ+CiAgPHJlY3QgeD0iNTgiIHk9Ijc4IiB3aWR0aD0iNyIgaGVpZ2h0PSIxMjgiIGZpbGw9IiM2YjZiNmIiLz4KICA8cmVjdCB4PSIxNiIgeT0iNTYiIHdpZHRoPSIxMDQiIGhlaWdodD0iMzAiIHJ4PSI0IiBmaWxsPSIjMUU3QjRGIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMi41Ii8+CiAgPHRleHQgeD0iNjgiIHk9Ijc3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtc2l6ZT0iMTUiIGZpbGw9IiNmZmYiPkxvdHVzIExhbmU8L3RleHQ+CiAgPHJlY3QgeD0iMzU0IiB5PSIxNTAiIHdpZHRoPSIxMiIgaGVpZ2h0PSI1NiIgZmlsbD0iIzdBNEEyQSIvPjxjaXJjbGUgY3g9IjM2MCIgY3k9IjEzOCIgcj0iMzAiIGZpbGw9IiM0Q0FGNTAiLz48Y2lyY2xlIGN4PSIzNDQiIGN5PSIxNTAiIHI9IjE4IiBmaWxsPSIjNDNBMDQ3Ii8+CiAgPHBhdGggZD0iTTEyMCAxOTAgTDExNiAyMTYgTTEzNCAxOTAgTDEzOCAyMTYiIHN0cm9rZT0iIzJEMkE1QSIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cmVjdCB4PSIxMTIiIHk9IjE0OCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjQ2IiByeD0iOSIgZmlsbD0iIzNGQTdGNSIvPgogIDxwYXRoIGQ9Ik0xNDEgMTU2IEwxNjAgMTI2IiBzdHJva2U9IiNBODZCM0MiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTExNSAxNTggTDEwNCAxODYiIHN0cm9rZT0iI0E4NkIzQyIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMzIiIHI9IjE3IiBmaWxsPSIjQTg2QjNDIi8+CiAgPHBhdGggZD0iTTExMSAxMzAgYTE3IDE3IDAgMCAxIDM0IDAgcS0xMC04LTM0IDB6IiBmaWxsPSIjMkIxQjE3Ii8+CiAgPGNpcmNsZSBjeD0iMTIyIiBjeT0iMTM0IiByPSIyIiBmaWxsPSIjMUIxNjQwIi8+PGNpcmNsZSBjeD0iMTM0IiBjeT0iMTM0IiByPSIyIiBmaWxsPSIjMUIxNjQwIi8+CiAgPHBhdGggZD0iTTEyMiAxNDAgcTYgNSAxMiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxQjE2NDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=" alt="A photo of you waving in front of your house. The house number 27 and a street sign that says Lotus Lane can be seen.">' +
+          '<span class="hint-ring r1"></span><span class="hint-ring r2"></span></div>' +
+        '<p class="post-cap">My house! 🏠 so happy today</p>' +
+      '</div></div>';
+    },
+    video: function () {
+      return '<div class="sc-video">' +
+        '<div class="player"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MjAgMjM2Ij4KICA8ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9InNwb3QiIGN4PSIuNSIgY3k9Ii4zNSIgcj0iLjc1Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNGRkU5QTgiLz48c3RvcCBvZmZzZXQ9Ii40NSIgc3RvcC1jb2xvcj0iIzlDNkFERSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzNCMjQ3MCIvPjwvcmFkaWFsR3JhZGllbnQ+PC9kZWZzPgogIDxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iMjM2IiBmaWxsPSJ1cmwoI3Nwb3QpIi8+CiAgPGVsbGlwc2UgY3g9IjIxMCIgY3k9IjIxNCIgcng9IjEyMCIgcnk9IjE0IiBmaWxsPSIjMkExQTU1IiBvcGFjaXR5PSIuNDUiLz4KICA8cGF0aCBkPSJNMjAwIDE2OCBMMTg0IDIwNiBNMjIwIDE2OCBMMjQwIDIwMCBMMjUyIDE5NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkQyQTVBIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xOTIgMTI0IEwyMjggMTI0IEwyNDQgMTc0IEwxNzYgMTc0IFoiIGZpbGw9IiNGRjZGQTgiLz4KICA8cGF0aCBkPSJNMTc2IDE3NCBMMjQ0IDE3NCIgc3Ryb2tlPSIjRkZFMjdBIiBzdHJva2Utd2lkdGg9IjUiLz4KICA8cGF0aCBkPSJNMTk1IDEzMiBMMTY2IDk4IE0yMjYgMTMyIEwyNTggMTEwIiBzdHJva2U9IiNBODZCM0MiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMjEwIiBjeT0iMTA0IiByPSIxNyIgZmlsbD0iI0E4NkIzQyIvPgogIDxwYXRoIGQ9Ik0xOTMgMTAyIGExNyAxNyAwIDAgMSAzNCAwIHEtNi0xMC0xNy04IHEtMTAgMC0xNyA4eiIgZmlsbD0iIzJCMUIxNyIvPgogIDxwYXRoIGQ9Ik0yMjYgOTYgcTE0IDQgMTAgMjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMUIxNyIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMjA0IDExMiBxNiA1IDEyIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFCMTY0MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8ZyBmaWxsPSIjRkZFMjdBIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiPjx0ZXh0IHg9IjkwIiB5PSI4MCI+4pmqPC90ZXh0Pjx0ZXh0IHg9IjMwMCIgeT0iNjYiPuKZqzwvdGV4dD48dGV4dCB4PSIzMzAiIHk9IjE1MCI+4pmqPC90ZXh0Pjx0ZXh0IHg9IjYwIiB5PSIxNjAiPuKZqzwvdGV4dD48L2c+CiAgPGcgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTEyMCA0MCBsMyA4IDggMy04IDMtMyA4LTMtOC04LTMgOC0zeiIvPjxwYXRoIGQ9Ik0zNzAgMTAwIGwyIDYgNiAyLTYgMi0yIDYtMi02LTYtMiA2LTJ6Ii8+PC9nPgo8L3N2Zz4K" alt="Meera dancing in her first dance video"><span class="play" aria-hidden="true">▶</span><div class="vbar"><span></span></div></div>' +
+        '<div class="vmeta"><b>Meera\'s first dance video! 💃</b><small>Class 3B · 24 views</small></div>' +
+        '<div class="comments"><p><b>Riya</b>So pretty!! 💖</p><p class="you key">Add your comment…</p></div>' +
+      '</div>';
+    },
+    store: function () {
+      return '<div class="sc-store">' +
+        '<div class="store-card"><img class="store-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODAgMzAwIj4KICA8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InNreSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzdDQzhGRiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0QzRjBGRiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPgogIDxyZWN0IHdpZHRoPSI0ODAiIGhlaWdodD0iMzAwIiBmaWxsPSJ1cmwoI3NreSkiLz4KICA8Y2lyY2xlIGN4PSI0MTAiIGN5PSI1NiIgcj0iMjgiIGZpbGw9IiNGRkQ4NEQiLz4KICA8ZyBmaWxsPSIjZmZmIj48ZWxsaXBzZSBjeD0iOTAiIGN5PSI2MiIgcng9IjM4IiByeT0iMTQiLz48ZWxsaXBzZSBjeD0iMTE1IiBjeT0iNTIiIHJ4PSIyMiIgcnk9IjE0Ii8+PGVsbGlwc2UgY3g9IjI5MCIgY3k9IjQyIiByeD0iMzAiIHJ5PSIxMSIvPjxlbGxpcHNlIGN4PSIzMDgiIGN5PSIzNiIgcng9IjE2IiByeT0iMTAiLz48L2c+CiAgPHBhdGggZD0iTTAgMjIwIFE4MCAxNjAgMTYwIDIxMCBUMzIwIDIwMCBUNDgwIDE5MCBWMzAwIEgwWiIgZmlsbD0iIzhGREI5QSIvPgogIDxwYXRoIGQ9Ik0wIDI1MCBRMTIwIDIxNSAyNDAgMjQ1IFQ0ODAgMjQwIFYzMDAgSDBaIiBmaWxsPSIjNURCQjcyIi8+CiAgPHJlY3QgeT0iMjYyIiB3aWR0aD0iNDgwIiBoZWlnaHQ9IjM4IiBmaWxsPSIjQTA2NzNEIi8+CiAgPHJlY3QgeT0iMjU2IiB3aWR0aD0iNDgwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjM0U5QjU3Ii8+CiAgPGcgZmlsbD0iIzhBNTUzMCI+PGNpcmNsZSBjeD0iNDAiIGN5PSIyODIiIHI9IjQiLz48Y2lyY2xlIGN4PSIxMzAiIGN5PSIyOTAiIHI9IjMiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSIyODAiIHI9IjQiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyODgiIHI9IjMiLz48L2c+CiAgPHJlY3QgeD0iMTIwIiB5PSIxNzIiIHdpZHRoPSI5MiIgaGVpZ2h0PSIxOCIgcng9IjQiIGZpbGw9IiNDOTgxM0YiLz48cmVjdCB4PSIxMjAiIHk9IjE3MiIgd2lkdGg9IjkyIiBoZWlnaHQ9IjYiIHJ4PSIzIiBmaWxsPSIjRTM5QjU1Ii8+CiAgPHJlY3QgeD0iMjkwIiB5PSIxMzAiIHdpZHRoPSIxMDQiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjQzk4MTNGIi8+PHJlY3QgeD0iMjkwIiB5PSIxMzAiIHdpZHRoPSIxMDQiIGhlaWdodD0iNiIgcng9IjMiIGZpbGw9IiNFMzlCNTUiLz4KICA8ZyBmaWxsPSIjRkZDOTNDIiBzdHJva2U9IiNFNTlCMDAiIHN0cm9rZS13aWR0aD0iMyI+PGNpcmNsZSBjeD0iMTQwIiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMTY2IiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMTkyIiBjeT0iMTUyIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzE0IiBjeT0iMTEwIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzQwIiBjeT0iMTEwIiByPSI4Ii8+PGNpcmNsZSBjeD0iMzY2IiBjeT0iMTEwIiByPSI4Ii8+PC9nPgogIDxyZWN0IHg9IjQ4IiB5PSIyMjIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIzMiIgcng9IjciIGZpbGw9IiNGRjVENzMiLz4KICA8Y2lyY2xlIGN4PSI2MiIgY3k9IjIxMCIgcj0iMTMiIGZpbGw9IiNBODZCM0MiLz4KICA8cGF0aCBkPSJNNDggMjA2IGExNCAxMiAwIDAgMSAyOCAwIHoiIGZpbGw9IiMzRDVBRkUiLz48cmVjdCB4PSI2MiIgeT0iMjAyIiB3aWR0aD0iMTgiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzRDVBRkUiLz4KICA8Y2lyY2xlIGN4PSI2NiIgY3k9IjIxMSIgcj0iMiIgZmlsbD0iIzFCMTY0MCIvPgogIDxwYXRoIGQ9Ik00MTAgMjU2IHEwIC0yNiAyMiAtMjYgcTIyIDAgMjIgMjZ6IiBmaWxsPSIjN0M0REZGIi8+PGNpcmNsZSBjeD0iNDI0IiBjeT0iMjQ0IiByPSIzIiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDQwIiBjeT0iMjQ0IiByPSIzIiBmaWxsPSIjZmZmIi8+CiAgPHRleHQgeD0iNTYiIHk9IjUyIiBmb250LWZhbWlseT0iVHJlYnVjaGV0IE1TLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMUIxNjQwIj7imIUgMSwyNDA8L3RleHQ+Cjwvc3ZnPgo=" alt="">' +
+          '<div><h3>Super Candy Blast</h3><p class="store-meta">FREE · ⭐ 4.9 · Games</p><span class="store-get">GET</span></div></div>' +
+        '<div class="perm key"><p class="perm-title">This app wants to use:</p>' +
+          '<ul><li>📷 Your camera</li><li>📒 Your contacts</li><li>📍 Your location</li><li>💳 In-app purchases</li></ul></div>' +
+      '</div>';
+    }
+  };
+
+  /* ---------- app view ---------- */
+  function openApp(id) {
+    clearTimers();
+    var s = byId(id);
+    body.innerHTML =
+      '<div class="app-view" style="--c:' + s.color + '">' +
+        '<header class="app-bar"><button class="home-btn" data-act="home">⌂ Home</button>' +
+          '<img src="' + s.icon + '" alt=""><h2>' + s.app + '</h2></header>' +
+        '<div class="app-body"></div>' +
+      '</div>';
+    var appBody = body.querySelector(".app-body");
+
+    if (s.type === "password") {
+      window.NBQPassword.render(appBody, s, DATA, { sound: SOUND, win: function (panel) { win(s, panel); } });
+      focusFirst(".tile");
+      return;
+    }
+
+    var order = shuffle(s.choices.map(function (c, i) { return i; }));
+    appBody.innerHTML =
+      '<div class="scene"><div class="laptop">' +
+        '<div class="lid"><span class="cam" aria-hidden="true"></span><div class="display">' + SCENES[s.type](s) + '</div></div>' +
+        '<div class="base" aria-hidden="true"><span class="notch"></span></div>' +
+      '</div></div>' +
+      '<aside class="panel">' +
+        askCard('<span class="watch">Watch the screen<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></span>') +
+        '<div class="choices" role="group" aria-label="Choices">' + order.map(function (i) {
+          return '<button class="choice" data-i="' + i + '">' + s.choices[i].text + '</button>';
+        }).join("") + '</div>' +
+        '<div class="feedback" aria-live="polite"></div>' +
+      '</aside>';
+
+    if (s.type === "popup") startPopupCountdown();
+
+    var panel = appBody.querySelector(".panel");
+    var fb = appBody.querySelector(".feedback");
+    var scene = appBody.querySelector(".scene");
+    var ready = false;
+
+    /* Step 1: the scene plays. Step 2: the scene's key detail lights up in the
+       app colour, the question appears in a matching card that points at it,
+       then the choices slide in. Tapping anywhere skips the wait. */
+    function reveal() {
+      if (ready) return;
+      ready = true;
+      panel.querySelector(".ask-q").textContent = s.question;
+      scene.classList.add("cue");
+      panel.classList.add("ready");
+      focusFirst(".choice");
+    }
+    state.timers.push(setTimeout(reveal, introDelay(s)));
+    appBody.addEventListener("click", function () { if (!ready) reveal(); }, true);
+
+    panel.addEventListener("click", function (ev) {
+      if (!ready) return;
+      var b = ev.target.closest(".choice");
+      if (!b || b.classList.contains("tried")) return;
+      var c = s.choices[+b.dataset.i];
+      if (c.ok) {
+        var sc = appBody.querySelector(".scene");
+        if (sc) sc.classList.add("solved");
+        win(s, panel);
+      } else {
+        SOUND.nudge();
+        b.classList.add("tried");
+        b.setAttribute("aria-disabled", "true");
+        fb.innerHTML = '<div class="nudge"><strong>Hmm, think again.</strong>' + c.why + '</div>';
+      }
+    });
+  }
+
+  function askCard(inner) {
+    return '<div class="ask" aria-live="polite">' +
+      '<div class="ask-head"><img class="ask-owl" src="' + OWL + '" alt=""><span class="ask-who">Nettie asks</span></div>' +
+      '<p class="ask-q">' + inner + '</p></div>';
+  }
+
+  /* How long the scene plays before the question shows (ms) */
+  function introDelay(s) {
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return 0;
+    if (s.type === "chat") return (0.3 + 0.7 * (s.chat.msgs.length - 1) + 0.35) * 1000 + 700;
+    return 1300;
+  }
+  window.NBQAskCard = askCard;
+
+  function startPopupCountdown() {
+    var n = 9;
+    state.timers.push(setInterval(function () {
+      n = n <= 1 ? 9 : n - 1;
+      var el = body.querySelector(".fp-count");
+      if (el) el.textContent = "00:0" + n;
+    }, 1000));
+  }
+
+  /* ---------- badge earned ---------- */
+  function win(s, panel) {
+    clearTimers();
+    var isNew = !state.earned[s.id];
+    if (isNew) { state.earned[s.id] = true; state.count++; }
+    renderSash(isNew ? s.id : null);
+    SOUND.badge();
+    var allDone = state.count === S.length;
+    panel.innerHTML =
+      '<div class="win" style="--c:' + s.color + '">' +
+        '<span class="win-patch"><img src="' + s.icon + '" alt=""></span>' +
+        '<p class="win-label">' + (isNew ? "Badge earned!" : "Badge already earned") + '</p>' +
+        '<h3>' + s.badge + '</h3>' +
+        '<p class="win-rule">Rule ' + s.n + ': ' + s.rule + '</p>' +
+        '<p class="win-text">' + s.success + '</p>' +
+        '<button class="btn-primary" data-act="' + (allDone ? "cert" : "home") + '">' + (allDone ? "See my certificate" : "Back to home") + '</button>' +
+      '</div>';
+    var btn = panel.querySelector(".btn-primary");
+    if (btn && usingKeyboard) btn.focus({ preventScroll: true });
+
+    /* Confetti: first out of the big badge, then out of its patch on the strip */
+    var C = window.NBQConfetti;
+    state.timers.push(setTimeout(function () {
+      C.burst(panel.querySelector(".win-patch"), s.color, { count: 34, spread: 120 });
+    }, 180));
+    if (isNew) state.timers.push(setTimeout(function () {
+      C.burst(document.querySelector('.patch[data-id="' + s.id + '"] .patch-disc'), s.color, { count: 20, spread: 70, size: 0.8 });
+    }, 520));
+  }
+
+  /* ---------- certificate ---------- */
+  function renderCert() {
+    clearTimers();
+    SOUND.fanfare();
+    body.innerHTML =
+      '<div class="cert">' +
+        '<div class="cert-badges" aria-hidden="true">' + S.map(function (s, i) {
+          return '<span style="--c:' + s.color + ';animation-delay:' + (i * 0.08) + 's"><img src="' + s.icon + '" alt=""></span>';
+        }).join("") + '</div>' +
+        '<h2>You\'re a Super Netizen!</h2>' +
+        '<p class="cert-lead">You earned all ' + S.length + ' badges. Here are the rules you now know:</p>' +
+        '<ol class="cert-rules">' + S.map(function (s) { return '<li>' + s.rule + '</li>'; }).join("") + '</ol>' +
+        '<button class="btn-primary" data-act="again">Play again</button>' +
+      '</div>';
+    focusFirst("[data-act=again]");
+    /* Confetti out of every badge, one after another */
+    body.querySelectorAll(".cert-badges span").forEach(function (el, i) {
+      state.timers.push(setTimeout(function () {
+        window.NBQConfetti.burst(el, S[i].color, { count: 14, spread: 80, size: 0.8 });
+      }, 450 + i * 110));
+    });
+  }
+
+  /* ---------- events ---------- */
+  body.addEventListener("click", function (ev) {
+    var app = ev.target.closest("[data-app]");
+    if (app) { SOUND.tap(); openApp(app.dataset.app); return; }
+    var act = ev.target.closest("[data-act]");
+    if (!act) return;
+    var a = act.dataset.act;
+    if (a === "start") { SOUND.tap(); renderHome(); }
+    else if (a === "home") { SOUND.tap(); renderHome(); }
+    else if (a === "cert") { renderCert(); }
+    else if (a === "again") { state.earned = {}; state.count = 0; renderSash(); renderHome(); }
+  });
+
+  muteBtn.addEventListener("click", function () {
+    var m = !SOUND.isMuted();
+    SOUND.setMuted(m);
+    muteBtn.textContent = m ? "🔇" : "🔊";
+    muteBtn.setAttribute("aria-label", m ? "Sound off. Turn sound on" : "Sound on. Turn sound off");
+  });
+
+  function tick() { clock.textContent = timeStr(); }
+
+  /* ---------- boot ---------- */
+  window.addEventListener("resize", fit);
+  fit();
+  tick(); setInterval(tick, 30000);
+  renderSash();
+  renderLock();
+})();
+
+</script>
+</body>
+</html>

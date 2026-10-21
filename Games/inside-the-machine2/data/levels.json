@@ -1,0 +1,377 @@
+{
+  "_about": "Inside the Machine – all level content and hotspot coordinates. Coordinates are in each scene SVG viewBox units (origin top-left).",
+  "level1_chipScanner": {
+    "objects": [
+      {
+        "k": "tablet",
+        "name": "Tablet",
+        "chip": true,
+        "msg": "Chip found! A tablet is a computer you can hold in your hands."
+      },
+      {
+        "k": "watch",
+        "name": "Smartwatch",
+        "chip": true,
+        "msg": "Chip found! A smartwatch is a tiny computer you wear."
+      },
+      {
+        "k": "toaster",
+        "name": "Pop-up toaster",
+        "chip": false,
+        "msg": "No chip. This pop-up toaster just uses heat to make toast."
+      },
+      {
+        "k": "book",
+        "name": "Book",
+        "chip": false,
+        "msg": "No chip. A book is made of paper, not computer parts."
+      },
+      {
+        "k": "phone",
+        "name": "Phone",
+        "chip": true,
+        "msg": "Chip found! A phone is a computer that fits in your pocket."
+      }
+    ],
+    "dwellSeconds": 0.8
+  },
+  "level2_deskSetup": {
+    "sceneViewBox": [
+      480,
+      300
+    ],
+    "pins": [
+      {
+        "n": 1,
+        "label": "Monitor",
+        "hint": "I show words, pictures and videos. I look like a small TV.",
+        "x": 50,
+        "y": 30.7,
+        "xPx": 240,
+        "yPx": 92
+      },
+      {
+        "n": 2,
+        "label": "System unit",
+        "hint": "I am the box that holds the brain of the computer.",
+        "x": 85.8,
+        "y": 57.3,
+        "xPx": 412,
+        "yPx": 172
+      },
+      {
+        "n": 3,
+        "label": "Keyboard",
+        "hint": "I have lots of keys. Press them to type letters and numbers.",
+        "x": 47.9,
+        "y": 78.7,
+        "xPx": 230,
+        "yPx": 236
+      },
+      {
+        "n": 4,
+        "label": "Mouse",
+        "hint": "Move me to point at things on the screen, then click to choose.",
+        "x": 74.4,
+        "y": 78.3,
+        "xPx": 357,
+        "yPx": 235
+      },
+      {
+        "n": 5,
+        "label": "Speakers",
+        "hint": "I let you hear music and sounds.",
+        "x": 15.4,
+        "y": 65.3,
+        "xPx": 74,
+        "yPx": 196
+      }
+    ],
+    "note": "x,y are % of scene; xPx,yPx are viewBox units"
+  },
+  "level3_xray": {
+    "caseViewBox": [
+      420,
+      340
+    ],
+    "slots": [
+      {
+        "k": "psu",
+        "letter": "A",
+        "name": "Power supply (PSU)",
+        "short": "Power supply",
+        "clue": "I take electricity from the wall socket and give power to every part.",
+        "yay": "Power supply is in! It gives power to every part.",
+        "x": 24,
+        "y": 24,
+        "w": 140,
+        "h": 70
+      },
+      {
+        "k": "mb",
+        "letter": "B",
+        "name": "Motherboard",
+        "short": "Motherboard",
+        "clue": "I am the big main board. All the other parts plug into me.",
+        "yay": "Motherboard is in! Look, new spaces appeared on it. Other parts plug into the motherboard.",
+        "x": 180,
+        "y": 24,
+        "w": 216,
+        "h": 292
+      },
+      {
+        "k": "ram",
+        "letter": "C",
+        "name": "RAM",
+        "short": "RAM",
+        "clue": "I hold what you are working on right now. I forget it all when the power goes off.",
+        "yay": "RAM is in! It holds what you are working on right now.",
+        "x": 326,
+        "y": 44,
+        "w": 54,
+        "h": 100,
+        "sub": true
+      },
+      {
+        "k": "fan",
+        "letter": "D",
+        "name": "Cooling fan",
+        "short": "Fan",
+        "clue": "I spin round and round to stop the computer from getting too hot.",
+        "yay": "Cooling fan is in! It keeps the computer from getting too hot.",
+        "x": 212,
+        "y": 46,
+        "w": 96,
+        "h": 96,
+        "sub": true
+      },
+      {
+        "k": "hdd",
+        "letter": "E",
+        "name": "Hard disk (HDD)",
+        "short": "Hard disk",
+        "clue": "I keep your files and photos safe, even when the computer is switched off.",
+        "yay": "Hard disk is in! It stores your files even when the power is off.",
+        "x": 24,
+        "y": 222,
+        "w": 140,
+        "h": 94
+      },
+      {
+        "k": "gpu",
+        "letter": "F",
+        "name": "Graphics card",
+        "short": "Graphics card",
+        "clue": "I help draw pictures, videos and games on the monitor.",
+        "yay": "Graphics card is in! It helps show pictures and games.",
+        "x": 198,
+        "y": 190,
+        "w": 184,
+        "h": 60,
+        "sub": true
+      }
+    ],
+    "rule": "Slots with sub=true appear only after the motherboard is placed."
+  },
+  "level4_tapThePart": {
+    "devices": [
+      {
+        "title": "laptop",
+        "names": {
+          "screen": "screen",
+          "webcam": "webcam",
+          "keyboard": "keyboard",
+          "touchpad": "touchpad",
+          "speaker": "speaker",
+          "usb": "USB port"
+        },
+        "riddles": [
+          {
+            "part": "webcam",
+            "q": "I am a tiny camera above the screen. I see you in video calls. What am I?"
+          },
+          {
+            "part": "touchpad",
+            "q": "Slide your finger on me to move the pointer. What am I?"
+          },
+          {
+            "part": "usb",
+            "q": "Plug a pen drive into me to save your work. What am I?"
+          },
+          {
+            "part": "speaker",
+            "q": "Music and sounds come out of my tiny holes. What am I?"
+          }
+        ]
+      },
+      {
+        "title": "phone",
+        "names": {
+          "touchscreen": "touchscreen",
+          "earpiece": "earpiece speaker",
+          "camera": "front camera",
+          "power": "power button",
+          "volume": "volume buttons",
+          "port": "charging port",
+          "mic": "microphone"
+        },
+        "riddles": [
+          {
+            "part": "power",
+            "q": "Press me to switch the phone on or off. What am I?"
+          },
+          {
+            "part": "port",
+            "q": "Plug the charger into me when the battery is low. What am I?"
+          },
+          {
+            "part": "camera",
+            "q": "Smile! I take selfies. What am I?"
+          },
+          {
+            "part": "mic",
+            "q": "Say hello! I listen to your voice during a call. What am I?"
+          }
+        ]
+      }
+    ],
+    "hotspotsIn": [
+      "assets/svg/scenes/laptop.svg",
+      "assets/svg/scenes/phone.svg"
+    ],
+    "hotspotIdPattern": "hotspot-<part>"
+  },
+  "level5_sortingBelt": {
+    "bins": [
+      {
+        "k": "input",
+        "name": "Input",
+        "desc": "Puts information into the computer"
+      },
+      {
+        "k": "output",
+        "name": "Output",
+        "desc": "Gives information out to you"
+      },
+      {
+        "k": "network",
+        "name": "Networking",
+        "desc": "Connects computers together"
+      }
+    ],
+    "devices": [
+      {
+        "k": "keyboard",
+        "name": "Keyboard",
+        "cat": "input",
+        "why": "You type on it to put letters into the computer."
+      },
+      {
+        "k": "mouse",
+        "name": "Mouse",
+        "cat": "input",
+        "why": "You move and click it to give the computer instructions."
+      },
+      {
+        "k": "mic",
+        "name": "Microphone",
+        "cat": "input",
+        "why": "It takes your voice into the computer."
+      },
+      {
+        "k": "webcam",
+        "name": "Webcam",
+        "cat": "input",
+        "why": "It sends pictures of you into the computer."
+      },
+      {
+        "k": "monitor",
+        "name": "Monitor",
+        "cat": "output",
+        "why": "It shows you what the computer is doing."
+      },
+      {
+        "k": "printer",
+        "name": "Printer",
+        "cat": "output",
+        "why": "It puts your work out onto paper."
+      },
+      {
+        "k": "speakers",
+        "name": "Speakers",
+        "cat": "output",
+        "why": "Sound comes out of them for everyone to hear."
+      },
+      {
+        "k": "headphones",
+        "name": "Headphones",
+        "cat": "output",
+        "why": "Sound comes out of them just for you."
+      },
+      {
+        "k": "router",
+        "name": "Wi-Fi router",
+        "cat": "network",
+        "why": "It shares the internet with devices using Wi-Fi."
+      },
+      {
+        "k": "cable",
+        "name": "Network cable",
+        "cat": "network",
+        "why": "It joins a computer to a network."
+      },
+      {
+        "k": "modem",
+        "name": "Modem",
+        "cat": "network",
+        "why": "It brings the internet into a building."
+      }
+    ],
+    "beltLoopSeconds": 12
+  },
+  "palette": {
+    "--panel": "#FFFFFF",
+    "--panel-2": "#F1F6F2",
+    "--ink": "#12281F",
+    "--muted": "#4A6257",
+    "--line": "#C9D8CF",
+    "--pcb": "#17694A",
+    "--pcb-deep": "#0E4A33",
+    "--trace": "#B86A22",
+    "--led": "#FFC21A",
+    "--xray": "#1D5FA8",
+    "--screen": "#27506B"
+  },
+  "frame": {
+    "width": 1130,
+    "height": 502,
+    "layout": "Top bar 58 px; body padding 12 px; side panel 260 px; play area 834 x 420 px. Frame scales uniformly to fit the window."
+  },
+  "audio": {
+    "folder": "assets/audio (mp3), assets/audio/wav (masters, 44.1 kHz mono)",
+    "events": {
+      "tap": "buttons, level track, tapping a device part",
+      "pickup": "picking up or selecting a draggable item",
+      "drop": "any drop onto a target, before the result",
+      "correct": "right answer (plays ~90 ms after drop)",
+      "wrong": "wrong answer (plays ~90 ms after drop)",
+      "scan": "Level 1 scan sweep, 0.8 s, stops if scanner moves off",
+      "no-chip": "Level 1 object without a chip",
+      "reveal": "Level 3 new slots appear; Level 4 phone arrives; badge screen opens",
+      "level-complete": "a level is finished (overlay appears)",
+      "all-complete": "fanfare when the fifth level is finished"
+    },
+    "volumes": {
+      "tap": 0.45,
+      "pickup": 0.55,
+      "drop": 0.7,
+      "correct": 0.8,
+      "wrong": 0.65,
+      "scan": 0.45,
+      "no-chip": 0.55,
+      "reveal": 0.6,
+      "level-complete": 0.85,
+      "all-complete": 0.9
+    }
+  }
+}

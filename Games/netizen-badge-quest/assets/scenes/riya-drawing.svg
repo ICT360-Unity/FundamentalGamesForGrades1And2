@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
+  <rect width="400" height="280" fill="#FFFEF6"/>
+  <g fill="none" stroke-linecap="round" stroke-width="11">
+    <path d="M70 232 A130 130 0 0 1 330 232" stroke="#F25C54"/>
+    <path d="M87 232 A113 113 0 0 1 313 232" stroke="#F7A541"/>
+    <path d="M104 232 A96 96 0 0 1 296 232" stroke="#F4CF3A"/>
+    <path d="M121 232 A79 79 0 0 1 279 232" stroke="#6CC56B"/>
+    <path d="M138 232 A62 62 0 0 1 262 232" stroke="#4FA3E8"/>
+  </g>
+  <g stroke="#FFB703" stroke-width="5" stroke-linecap="round"><path d="M52 14v12M52 78v12M14 52h12M78 52h12M25 25l8 8M71 71l8 8M79 25l-8 8M33 71l-8 8"/></g>
+  <circle cx="52" cy="52" r="21" fill="#FFD23F"/>
+  <path d="M44 50 q2-3 4 0 M56 50 q2-3 4 0 M44 58 q8 7 16 0" fill="none" stroke="#C47F00" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M352 252 V196" stroke="#3C9A3F" stroke-width="6" stroke-linecap="round"/>
+  <path d="M352 226 q-16-10-22 4 q12 6 22-4" fill="#5CBF60"/>
+  <g fill="#FF7AB6"><circle cx="352" cy="172" r="10"/><circle cx="366" cy="184" r="10"/><circle cx="360" cy="200" r="10"/><circle cx="344" cy="200" r="10"/><circle cx="338" cy="184" r="10"/></g>
+  <circle cx="352" cy="187" r="8" fill="#FFD23F"/>
+  <path d="M10 262 l8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12" fill="none" stroke="#4CAF50" stroke-width="3.5" stroke-linejoin="round"/>
+  <text x="300" y="38" font-family="Comic Sans MS, Chalkboard SE, cursive" font-size="22" fill="#6A4C93" transform="rotate(-6 300 38)">~ Riya</text>
+</svg>

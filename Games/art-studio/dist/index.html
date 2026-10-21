@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Art Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Art Studio ===== */
+:root {
+  --ink: #1E2A4A;
+  --ink-soft: #4A5878;
+  --frost: #EAF2F8;
+  --mist: #D5E4EF;
+  --glacier: #9CC7E4;
+  --paper: #FFFFFF;
+  --berry: #C8384F;
+  --berry-soft: #FBE3E7;
+  --pine: #2F7A5F;
+  --pine-soft: #DDF0E7;
+  --butter: #F4C64E;
+  --butter-soft: #FDF3D3;
+  --letterbox: #C9DCEA;
+
+  --font-display: "Grandstander", "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --letterbox: #16203A; } }
+:root[data-theme="dark"] { --letterbox: #16203A; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--letterbox); font-family: var(--font-body); color: var(--ink); overflow: hidden; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, canvas:focus-visible { outline: 3px solid var(--berry); outline-offset: 2px; }
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
+#stage {
+  position: relative; width: 1130px; height: 502px; flex: none;
+  transform-origin: center center;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,.9) 0 2px, transparent 3px) 0 0 / 46px 46px,
+    radial-gradient(circle at 60% 70%, rgba(255,255,255,.7) 0 1.5px, transparent 2.5px) 0 0 / 34px 34px,
+    var(--frost);
+  border-radius: 18px; overflow: hidden; user-select: none;
+}
+.screen { position: absolute; inset: 0; display: none; }
+.screen.is-active { display: flex; }
+
+/* ----- Shared ----- */
+.lesson-tag {
+  display: inline-block; margin: 0;
+  font-family: var(--font-display); font-weight: 600; font-size: 13px;
+  color: var(--paper); background: var(--ink);
+  padding: 3px 10px 4px; border-radius: 999px;
+}
+.btn { border: 0; border-radius: 999px; font-family: var(--font-display); font-weight: 800; font-size: 19px; padding: 12px 26px 13px; transition: transform .12s ease; }
+.btn:active { transform: translateY(2px); }
+.btn-primary { background: var(--berry); color: var(--paper); box-shadow: 0 4px 0 #8E2236; }
+.btn-primary:active { box-shadow: 0 2px 0 #8E2236; }
+.btn-ghost { background: transparent; border: 2px solid var(--ink-soft); color: var(--ink); font-size: 15px; padding: 9px 18px; }
+.btn-mini { border: 2px solid var(--mist); background: var(--paper); border-radius: 999px; font-size: 13px; font-weight: 700; padding: 4px 12px; }
+.btn-mini[aria-pressed="true"], .btn-ghost[aria-pressed="true"] { color: var(--ink-soft); text-decoration: line-through; }
+
+.bubble { position: relative; margin: 0; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--r-md); padding: 10px 12px; font-size: 15px; line-height: 1.38; }
+.bubble.is-good { background: var(--pine-soft); border-color: var(--pine); }
+
+/* ===== TITLE ===== */
+#screen-title { align-items: center; padding: 0 56px; gap: 40px; }
+.title-copy { flex: 1 1 auto; position: relative; z-index: 2; }
+.title { font-family: var(--font-display); font-weight: 800; font-size: 84px; line-height: .95; letter-spacing: -1px; margin: 14px 0 12px; }
+.title-sub { font-size: 18px; line-height: 1.4; max-width: 40ch; margin: 0 0 18px; color: var(--ink-soft); }
+.howto { list-style: none; display: flex; gap: 10px; padding: 0; margin: 0 0 22px; }
+.howto li { display: flex; align-items: center; gap: 8px; background: var(--paper); border-radius: 999px; padding: 6px 14px 6px 6px; font-weight: 700; font-size: 14px; white-space: nowrap; }
+.howto-n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--glacier); font-family: var(--font-display); font-weight: 800; font-size: 14px; }
+.title-actions { display: flex; gap: 12px; align-items: center; }
+.title-hazel { flex: 0 0 340px; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+.title-hazel img { width: 210px; height: auto; margin-top: 8px; }
+.bubble-big { font-size: 16.5px; max-width: 330px; }
+.bubble-big::after { content: ""; position: absolute; left: 50%; bottom: -12px; width: 18px; height: 18px; background: inherit; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: translateX(-50%) rotate(45deg); }
+.title-snow { position: absolute; left: -20px; right: -20px; bottom: -60px; height: 130px; z-index: 1; background: var(--paper); border-radius: 50% 50% 0 0 / 60% 70% 0 0; box-shadow: 0 -2px 0 var(--mist); }
+
+/* ===== MENU ===== */
+#screen-menu { flex-direction: column; padding: 26px 40px 30px; }
+.menu-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+.menu-title { font-family: var(--font-display); font-weight: 800; font-size: 36px; margin: 8px 0 2px; line-height: 1.05; }
+.menu-sub { margin: 0; color: var(--ink-soft); font-size: 16px; }
+.scene-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; flex: 1; align-items: start; }
+.scene-card {
+  border: 0; background: var(--paper); border-radius: var(--r-md);
+  padding: 10px 10px 12px; text-align: left;
+  display: flex; flex-direction: column; gap: 4px;
+  box-shadow: 0 0 0 2px transparent, 0 5px 0 rgba(30,42,74,.12);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.scene-card:hover { transform: translateY(-4px); box-shadow: 0 0 0 2px var(--berry), 0 9px 0 rgba(30,42,74,.12); }
+.scene-thumb { width: 100%; aspect-ratio: 3 / 2; border-radius: 6px; box-shadow: 0 0 0 1.5px var(--mist); margin-bottom: 6px; display: block; }
+.scene-name { font-family: var(--font-display); font-weight: 800; font-size: 21px; line-height: 1.1; }
+.scene-line { font-size: 13.5px; color: var(--ink-soft); line-height: 1.3; min-height: 36px; }
+.scene-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; margin-top: 4px; }
+.new-tag { background: var(--butter); border-radius: 999px; padding: 1px 9px 2px; }
+.mini-stars { color: #E2A90F; font-size: 16px; letter-spacing: 1px; }
+.mini-stars i { color: var(--mist); font-style: normal; }
+
+/* ===== BRIEF ===== */
+#screen-brief { align-items: center; padding: 0 40px; gap: 34px; }
+.brief-pic { margin: 0; flex: 0 0 auto; text-align: center; }
+.brief-pic canvas { width: 480px; height: 320px; display: block; border-radius: 6px; background: var(--paper); box-shadow: 0 0 0 2px var(--ink), 8px 10px 0 var(--glacier); }
+.brief-pic figcaption { margin-top: 14px; font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--ink-soft); }
+.brief-panel { flex: 1; min-width: 0; }
+.brief-hazel { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.brief-hazel img { width: 62px; flex: none; }
+.brief-hazel .bubble { font-size: 15px; }
+.brief-name { font-family: var(--font-display); font-weight: 800; font-size: 32px; margin: 0; line-height: 1.05; }
+.brief-goal { margin: 2px 0 10px; color: var(--ink-soft); font-size: 15px; }
+.brief-list-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; margin: 0 0 6px; }
+.brief-steps { margin: 0 0 16px; padding: 0; list-style: none; counter-reset: s; background: var(--paper); border-radius: var(--r-md); padding: 6px 10px; }
+.brief-steps li { counter-increment: s; display: flex; gap: 10px; align-items: center; font-size: 14.5px; padding: 4px 0; }
+.brief-steps li::before { content: counter(s); flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--glacier); font-family: var(--font-display); font-weight: 800; font-size: 12.5px; }
+.brief-actions { display: flex; gap: 12px; align-items: center; }
+
+/* ===== GAME ===== */
+#screen-game { flex-direction: column; }
+.topbar { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-name { font-family: var(--font-display); font-weight: 800; font-size: 21px; }
+.scene-chip { font-family: var(--font-display); font-weight: 600; font-size: 14px; background: var(--paper); border: 2px solid var(--mist); border-radius: 999px; padding: 2px 10px 3px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.step-count { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin-right: 4px; }
+.workspace { flex: 1; display: flex; gap: 12px; padding: 2px 12px 12px; min-height: 0; }
+
+/* Instructions (left) */
+.instructions { flex: 0 0 214px; background: var(--paper); border-radius: var(--r-md); padding: 0 0 8px; display: flex; flex-direction: column; overflow: hidden; }
+.instructions-head { margin: 0; background: var(--ink); color: var(--paper); font-family: var(--font-display); font-weight: 800; font-size: 17px; padding: 9px 14px 10px; }
+.steps { list-style: none; margin: 8px 0 0; padding: 0 8px; display: flex; flex-direction: column; gap: 3px; }
+.steps li { display: flex; gap: 9px; align-items: flex-start; padding: 6px 8px; border-radius: 10px; font-size: 13.5px; line-height: 1.3; color: var(--ink-soft); }
+.steps .num { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--frost); font-family: var(--font-display); font-weight: 800; font-size: 12.5px; color: var(--ink-soft); }
+.steps li.is-current { background: var(--butter-soft); color: var(--ink); font-weight: 700; box-shadow: inset 4px 0 0 var(--berry); }
+.steps li.is-current .num { background: var(--berry); color: var(--paper); }
+.steps li.is-done { opacity: .6; }
+.steps li.is-done .num { background: var(--pine); color: var(--paper); font-size: 12px; }
+
+/* Toolbar */
+.toolbar { flex: 0 0 112px; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 4px; background: var(--ink); padding: 6px; border-radius: var(--r-md); position: relative; z-index: 5; }
+.tool { position: relative; border: 2px solid transparent; background: var(--paper); border-radius: var(--r-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 0 1px; min-height: 0; }
+.tool img { width: 25px; height: 25px; pointer-events: none; }
+.tool-name { font-size: 10.5px; font-weight: 700; line-height: 1.1; margin-top: 1px; }
+.tool:hover { background: var(--butter-soft); }
+.tool.is-on { background: var(--butter); border-color: var(--ink); }
+.tool.is-right { background: var(--pine-soft); border-color: var(--pine); }
+.tool.is-wrong { background: var(--berry-soft); border-color: var(--berry); }
+
+/* Tooltip */
+.tip {
+  position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+  width: 190px; padding: 7px 10px 8px;
+  background: var(--ink); color: var(--paper); border-radius: 10px;
+  font-size: 12.5px; line-height: 1.3; text-align: left;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .12s ease .25s; z-index: 20;
+}
+.tip b { display: block; font-family: var(--font-display); font-size: 14px; margin-bottom: 1px; }
+.tip::before { content: ""; position: absolute; left: -6px; top: 50%; width: 12px; height: 12px; background: var(--ink); transform: translateY(-50%) rotate(45deg); }
+.tool:hover .tip, .tool:focus-visible .tip { opacity: 1; visibility: visible; }
+
+/* Right / wrong marks */
+.mark { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%; display: none; place-items: center; color: #fff; font-size: 12px; font-weight: 800; line-height: 1; z-index: 3; box-shadow: 0 0 0 2px var(--paper); }
+.is-right > .mark { display: grid; background: var(--pine); }
+.is-right > .mark::after { content: "✓"; }
+.is-wrong > .mark { display: grid; background: var(--berry); }
+.is-wrong > .mark::after { content: "✕"; }
+.is-wrong { animation: shake .3s ease; }
+@keyframes shake { 25% { translate: -3px 0; } 75% { translate: 3px 0; } }
+
+/* Drawer of choices */
+.drawer { flex: 0 0 140px; background: var(--paper); border-radius: var(--r-md); padding: 10px 9px 8px; display: flex; flex-direction: column; border: 2px dashed var(--mist); transition: border-color .2s, box-shadow .2s; }
+.drawer.is-open { border: 2px solid var(--ink); }
+.drawer.is-next { box-shadow: 0 0 0 4px var(--butter); }
+.drawer-title { font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 0 0 8px; }
+.drawer-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+.drawer-body.is-open-anim { animation: slideIn .2s ease; }
+.drawer.is-open .drawer-body { animation: slideIn .22s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.drawer-note { grid-column: 1 / -1; margin: 0; font-size: 13.5px; line-height: 1.4; color: var(--ink-soft); }
+.drawer-note.is-wrong { color: var(--berry); font-weight: 700; }
+.option { position: relative; border: 2px solid var(--mist); background: var(--frost); border-radius: var(--r-sm); padding: 5px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.option img { width: 48px; height: 34px; object-fit: contain; pointer-events: none; }
+.is-stamps .option img { height: 40px; }
+.option span:not(.mark) { font-size: 11px; font-weight: 700; line-height: 1.1; text-align: center; }
+.option:hover { border-color: var(--glacier); }
+.option.is-right { background: var(--pine-soft); border-color: var(--pine); }
+.option.is-wrong { background: var(--berry-soft); border-color: var(--berry); }
+
+/* Hints */
+.is-hint { animation: hintBounce 1s ease-in-out infinite; z-index: 4; }
+.tool.is-hint, .option.is-hint { border-color: var(--pine); box-shadow: 0 0 0 3px #8CD3B0; }
+.swatch.is-hint { box-shadow: 0 0 0 4px var(--pine); }
+@keyframes hintBounce { 50% { translate: 0 -3px; } }
+
+/* Main column: Hazel coach + card + palette */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.coach { width: 100%; height: 96px; flex: none; display: flex; align-items: center; gap: 6px; }
+.coach > img { width: 70px; height: 86px; object-fit: contain; flex: none; }
+.coach-bubble {
+  flex: 1; min-width: 0; height: 100%; position: relative;
+  background: var(--paper); border: 2.5px solid var(--ink); border-radius: var(--r-md);
+  padding: 8px 12px 7px; display: flex; flex-direction: column; justify-content: space-between;
+}
+.coach-bubble::before { content: ""; position: absolute; left: -9px; top: 36px; width: 14px; height: 14px; background: inherit; border-left: 2.5px solid; border-bottom: 2.5px solid; border-color: inherit; transform: rotate(45deg); }
+.coach.is-good .coach-bubble { background: var(--pine-soft); border-color: var(--pine); }
+.coach.is-oops .coach-bubble { background: var(--butter-soft); border-color: #B98A12; }
+.coach-bubble.pop { animation: pop .28s ease; }
+@keyframes pop { 0% { transform: scale(.97); } 60% { transform: scale(1.015); } 100% { transform: scale(1); } }
+.coach-text { margin: 0; font-size: 15.5px; line-height: 1.32; font-weight: 700; }
+.tracker { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+.slot { display: flex; gap: 4px; align-items: center; font-size: 12px; padding: 2px 8px 3px; border-radius: 999px; background: var(--frost); color: var(--ink-soft); white-space: nowrap; }
+.slot + .slot { margin-left: 12px; }
+.slot + .slot::before { content: "›"; position: absolute; margin-left: -16px; color: var(--ink-soft); font-weight: 800; }
+.slot { position: relative; }
+.slot-value { font-weight: 800; }
+.slot.is-done { background: var(--pine); color: var(--paper); }
+.slot.is-done .slot-value::before { content: "✓ "; }
+.slot.is-current { background: var(--berry); color: var(--paper); font-weight: 700; }
+.slot.is-all { background: var(--pine); color: var(--paper); font-weight: 800; }
+
+.easel { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.card-frame { position: relative; width: 444px; height: 296px; border-radius: 6px; background: var(--paper); box-shadow: 0 0 0 2px var(--ink), 0 5px 0 2px rgba(30,42,74,.18); overflow: hidden; }
+.card-frame canvas { position: absolute; inset: 0; width: 444px; height: 296px; display: block; }
+#guide { cursor: not-allowed; touch-action: none; }
+.is-armed .card-frame { box-shadow: 0 0 0 2px var(--ink), 0 0 0 6px var(--butter); }
+.is-armed #guide { cursor: none; animation: guidePulse 1.6s ease-in-out infinite; }
+@keyframes guidePulse { 50% { opacity: .55; } }
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .6s ease-out; }
+@keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+.saved-chip { position: absolute; right: 10px; top: 10px; background: var(--pine); color: var(--paper); font-family: var(--font-display); font-weight: 800; font-size: 15px; padding: 3px 12px 4px; border-radius: 999px; opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .25s, transform .25s; }
+.saved-chip.go { opacity: 1; transform: none; }
+
+.palette { width: 444px; height: 40px; display: flex; align-items: center; justify-content: space-between; background: var(--paper); border-radius: var(--r-md); padding: 0 10px; transition: box-shadow .2s; }
+.palette.is-next { box-shadow: 0 0 0 4px var(--butter); }
+.swatch { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--swatch); border: 2px solid rgba(30,42,74,.35); padding: 0; transition: transform .12s ease; }
+.swatch .mark { width: 16px; height: 16px; font-size: 10px; top: -6px; right: -6px; }
+.swatch:hover { transform: scale(1.1); }
+.swatch.is-on { border: 3px solid var(--ink); transform: scale(1.14); }
+
+/* ===== FINAL ===== */
+#screen-final { align-items: center; padding: 0 40px; gap: 36px; }
+.final-card-wrap { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.final-card { position: relative; width: 486px; height: 324px; background: var(--paper); border-radius: 6px; box-shadow: 0 0 0 2px var(--ink), 10px 12px 0 0 var(--berry); transform: rotate(-2deg); overflow: hidden; }
+.final-card canvas { width: 486px; height: 324px; display: block; }
+.greeting { position: absolute; left: 22px; bottom: 16px; margin: 0; max-width: 260px; font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1.05; color: var(--berry); }
+.final-hazel { display: flex; align-items: center; gap: 10px; margin-left: 40px; }
+.final-hazel img { width: 64px; }
+.final-hazel .bubble { font-size: 15px; }
+.final-panel { flex: 1; }
+.final-title { font-family: var(--font-display); font-weight: 800; font-size: 34px; margin: 0; line-height: 1; }
+.stars { display: flex; gap: 6px; margin: 8px 0 2px; }
+.star { width: 30px; height: 30px; background: var(--mist); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.star.is-on { background: var(--butter); }
+.final-note { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+.recap-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; margin: 0 0 5px; }
+.recap { list-style: none; margin: 0 0 14px; padding: 0; background: var(--paper); border-radius: var(--r-md); }
+.recap li { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 10px; padding: 5px 12px; font-size: 13.5px; }
+.recap li + li { border-top: 2px dashed var(--mist); }
+.recap img { width: 22px; height: 22px; }
+.recap .tool-used { font-weight: 700; color: var(--berry); white-space: nowrap; }
+.final-actions { display: flex; gap: 12px; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+
+    <!-- ============ TITLE ============ -->
+    <section id="screen-title" class="screen is-active" aria-label="Start">
+      <div class="title-copy">
+        <p class="lesson-tag">Lesson 6: Creative Art</p>
+        <h1 class="title">Art Studio</h1>
+        <p class="title-sub">Every effect needs the right tool. Paint pictures one tool at a time.</p>
+        <ol class="howto">
+          <li><span class="howto-n">1</span>Pick a picture</li>
+          <li><span class="howto-n">2</span>Pick the right tool</li>
+          <li><span class="howto-n">3</span>Use it on the card</li>
+        </ol>
+        <div class="title-actions">
+          <button id="btn-start" class="btn btn-primary" type="button">Start painting</button>
+          <button class="btn btn-ghost btn-sound" type="button" aria-pressed="false">Sound on</button>
+        </div>
+      </div>
+      <div class="title-hazel">
+        <p class="bubble bubble-big" id="welcome-line"></p>
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MCAxMDggQzc0IDEyMCA4NiAxMjAgOTAgMTA4IFoiIGZpbGw9IiMxRTJBNEEiLz48cGF0aCBkPSJNNzUgMTE0IEM3OCAxMTcgODIgMTE3IDg1IDExNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTg3Q0E4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI5NiIgY3k9IjE4NCIgcng9IjEzIiByeT0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=" alt="Hazel the snow hare, wearing a red scarf">
+      </div>
+      <div class="title-snow" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============ MENU: pick a picture ============ -->
+    <section id="screen-menu" class="screen" aria-label="Pick a picture">
+      <header class="menu-head">
+        <div>
+          <p class="lesson-tag">Art Studio</p>
+          <h2 id="menu-title" class="menu-title"></h2>
+          <p id="menu-sub" class="menu-sub"></p>
+        </div>
+        <button class="btn-mini btn-sound" type="button" aria-pressed="false">Sound on</button>
+      </header>
+      <div id="scene-grid" class="scene-grid"></div>
+    </section>
+
+    <!-- ============ BRIEF: what you'll make ============ -->
+    <section id="screen-brief" class="screen" aria-label="What you'll make">
+      <figure class="brief-pic">
+        <canvas id="brief-preview" aria-hidden="true"></canvas>
+        <figcaption>What you'll make</figcaption>
+      </figure>
+      <div class="brief-panel">
+        <div class="brief-hazel">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MCAxMDggQzc0IDEyMCA4NiAxMjAgOTAgMTA4IFoiIGZpbGw9IiMxRTJBNEEiLz48cGF0aCBkPSJNNzUgMTE0IEM3OCAxMTcgODIgMTE3IDg1IDExNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTg3Q0E4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI5NiIgY3k9IjE4NCIgcng9IjEzIiByeT0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=" alt="">
+          <p id="brief-hazel" class="bubble"></p>
+        </div>
+        <h2 id="brief-name" class="brief-name"></h2>
+        <p id="brief-goal" class="brief-goal"></p>
+        <h3 class="brief-list-title">Instructions</h3>
+        <ol id="brief-steps" class="brief-steps"></ol>
+        <div class="brief-actions">
+          <button id="btn-go" class="btn btn-primary" type="button">OK, let's paint!</button>
+          <button id="btn-brief-back" class="btn btn-ghost" type="button">Back to pictures</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GAME ============ -->
+    <section id="screen-game" class="screen" aria-label="Paint the picture">
+      <header class="topbar">
+        <div class="brand"><span class="lesson-tag">Lesson 6</span><span class="brand-name">Art Studio</span><span id="scene-chip" class="scene-chip"></span></div>
+        <div class="topbar-right">
+          <span id="step-count" class="step-count" aria-live="polite">Step 1 of 6</span>
+          <button id="btn-menu" class="btn-mini" type="button">Pictures</button>
+          <button class="btn-mini btn-sound" type="button" aria-pressed="false">Sound on</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="instructions" aria-label="Instructions">
+          <h2 class="instructions-head">Instructions</h2>
+          <ol id="steps" class="steps"></ol>
+        </aside>
+
+        <nav id="toolbar" class="toolbar" aria-label="Tools"></nav>
+
+        <aside id="drawer" class="drawer" aria-label="Tool choices">
+          <h2 id="drawer-title" class="drawer-title">Choices</h2>
+          <div id="drawer-body" class="drawer-body"></div>
+        </aside>
+
+        <div class="main">
+          <div id="coach" class="coach">
+            <img id="hazel" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MiAxMDkgQzc2IDExNCA4NCAxMTQgODggMTA5IiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTg0IiByeD0iMTMiIHJ5PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIvPgo8ZWxsaXBzZSBjeD0iOTYiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+" alt="Hazel">
+            <div id="coach-bubble" class="coach-bubble">
+              <p id="bubble" class="coach-text" aria-live="polite"></p>
+              <ol id="tracker" class="tracker" aria-label="What to do in this step"></ol>
+            </div>
+          </div>
+          <div class="easel" id="easel">
+            <div class="card-frame">
+              <canvas id="art" aria-hidden="true"></canvas>
+              <canvas id="guide" tabindex="0" aria-label="Your picture. When a tool is ready, click here, or press Enter to use it."></canvas>
+              <div id="flash" class="flash" aria-hidden="true"></div>
+              <div id="saved-chip" class="saved-chip" aria-hidden="true">Saved</div>
+            </div>
+            <div id="palette" class="palette" role="group" aria-label="Colors"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL ============ -->
+    <section id="screen-final" class="screen" aria-label="Picture finished">
+      <div class="final-card-wrap">
+        <div class="final-card">
+          <canvas id="final-card"></canvas>
+          <p id="greeting" class="greeting"></p>
+        </div>
+        <div class="final-hazel">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MCAxMDggQzc0IDEyMCA4NiAxMjAgOTAgMTA4IFoiIGZpbGw9IiMxRTJBNEEiLz48cGF0aCBkPSJNNzUgMTE0IEM3OCAxMTcgODIgMTE3IDg1IDExNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTg3Q0E4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI5NiIgY3k9IjE4NCIgcng9IjEzIiByeT0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=" alt="">
+          <p class="bubble is-good" id="final-hazel-line"></p>
+        </div>
+      </div>
+      <div class="final-panel">
+        <h2 id="final-title" class="final-title"></h2>
+        <div id="stars" class="stars" role="img" aria-label="">
+          <span class="star"></span><span class="star"></span><span class="star"></span>
+        </div>
+        <p id="final-note" class="final-note"></p>
+        <h3 class="recap-title">The right tool for each effect</h3>
+        <ul id="recap" class="recap"></ul>
+        <div class="final-actions">
+          <button id="btn-pick" class="btn btn-primary" type="button">Pick another picture</button>
+          <button id="btn-again" class="btn btn-ghost" type="button">Paint it again</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+<script>
+/* Art Studio — game content.
+   Edit text here without touching the game code.
+   Keep asset paths as full literal strings so build.py can inline them. */
+window.WSW_DATA = {
+  title: "Art Studio",
+  lesson: "Lesson 6: Creative Art",
+
+  customer: {
+    name: "Hazel",
+    art: {
+      normal: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MiAxMDkgQzc2IDExNCA4NCAxMTQgODggMTA5IiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTg0IiByeD0iMTMiIHJ5PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIvPgo8ZWxsaXBzZSBjeD0iOTYiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+",
+      happy: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+Cgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03MCAxMDggQzc0IDEyMCA4NiAxMjAgOTAgMTA4IFoiIGZpbGw9IiMxRTJBNEEiLz48cGF0aCBkPSJNNzUgMTE0IEM3OCAxMTcgODIgMTE3IDg1IDExNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTg3Q0E4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxODQiIHJ4PSIxMyIgcnk9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI5NiIgY3k9IjE4NCIgcng9IjEzIiByeT0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+      think: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTk2Ij4KPGVsbGlwc2UgY3g9IjgwIiBjeT0iMTg2IiByeD0iNTIiIHJ5PSI3IiBmaWxsPSIjQzlEOEU0Ii8+CjxwYXRoIGQ9Ik01OCA3MCBDNDYgNDAgNDQgNiA1NiA0IEM2OCAyIDcyIDQwIDcwIDcwIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik01OCA2MiBDNTIgNDAgNTIgMTYgNTcgMTMgQzYzIDEyIDY1IDQwIDY1IDYyIFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTkyIDcwIEM5NiA0MCAxMDggOCAxMjAgMTIgQzEzMCAxNiAxMTYgNDYgMTA0IDcyIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik05NyA2NCBDMTAxIDQ0IDEwOSAyMiAxMTYgMjAgQzEyMSAyMiAxMTIgNDQgMTAzIDY2IFoiIGZpbGw9IiNGN0M2RDAiLz4KPHBhdGggZD0iTTM0IDE4NiBDMjYgMTUwIDQwIDExOCA4MCAxMTggQzEyMCAxMTggMTM0IDE1MCAxMjYgMTg2IFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxlbGxpcHNlIGN4PSI4MCIgY3k9Ijk0IiByeD0iNDIiIHJ5PSIzNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ0IDEyMCBDNjAgMTMyIDEwMCAxMzIgMTE2IDEyMCBMMTE4IDEzNCBDMTAwIDE0NiA2MCAxNDYgNDIgMTM0IFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTk4IDEzNiBMMTA4IDE2OCBMOTQgMTY4IEw4OCAxNDAgWiIgZmlsbD0iI0M4Mzg0RiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOTggMTUwIEwxMDQgMTUwIE0xMDAgMTU4IEwxMDYgMTU4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iOTAiIHI9IjUiIGZpbGw9IiMxRTJBNEEiLz48Y2lyY2xlIGN4PSI5NCIgY3k9IjkwIiByPSI1IiBmaWxsPSIjMUUyQTRBIi8+CjxjaXJjbGUgY3g9IjY3LjUiIGN5PSI4OC41IiByPSIxLjYiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI5NS41IiBjeT0iODguNSIgcj0iMS42IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik01OCA3OCBMNzIgODEgTTg4IDgxIEwxMDIgNzciIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSI1NiIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPjxjaXJjbGUgY3g9IjEwNCIgY3k9IjEwNCIgcj0iNiIgZmlsbD0iI0Y3QzZEMCIvPgo8cGF0aCBkPSJNNzYgMTAwIEw4NCAxMDAgTDgwIDEwNSBaIiBmaWxsPSIjRTg3Q0E4Ii8+CjxwYXRoIGQ9Ik03NCAxMTEgTDg2IDEwOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxlbGxpcHNlIGN4PSI2NCIgY3k9IjE4NCIgcng9IjEzIiByeT0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KPGVsbGlwc2UgY3g9Ijk2IiBjeT0iMTg0IiByeD0iMTMiIHJ5PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+    }
+  },
+
+  /* The 16 tools, in two columns like the Tux Paint toolbar */
+  tools: [
+    { id: "paint",  label: "Paint",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTMwIDYgTDE4IDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTggMjAgQzEyIDE4IDggMjQgMTAgMzAgQzE0IDMyIDIwIDMwIDIxIDIzIFoiIGZpbGw9IiNDODM4NEYiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOCAzMyBDMTIgMzUgMTYgMzUgMTkgMzMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",  desc: "Paint draws by hand with a brush you choose." },
+    { id: "stamp",  label: "Stamp",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSI5IiByPSI1IiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42Ii8+PHBhdGggZD0iTTE3IDE0IEwxNyAyMCBNMjMgMTQgTDIzIDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cmVjdCB4PSI4IiB5PSIyMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjciIHJ4PSIyIiBmaWxsPSIjQzgzODRGIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42Ii8+PHBhdGggZD0iTTkgMzMgTDMxIDMzIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=",  desc: "Stamp drops ready-made pictures onto your canvas." },
+    { id: "lines",  label: "Lines",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTggMzEgTDMyIDkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjgiIGN5PSIzMSIgcj0iMyIgZmlsbD0iIzFFMkE0QSIvPjxjaXJjbGUgY3g9IjMyIiBjeT0iOSIgcj0iMyIgZmlsbD0iIzFFMkE0QSIvPjwvc3ZnPg==",  desc: "Lines draws straight lines from one point to another." },
+    { id: "shapes", label: "Shapes", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3QgeD0iNiIgeT0iMTQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgcng9IjIiIGZpbGw9IiM5Q0M3RTQiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiLz48Y2lyY2xlIGN4PSIyNiIgY3k9IjE1IiByPSI4IiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42Ii8+PC9zdmc+", desc: "Shapes makes circles, squares, triangles and stars." },
+    { id: "text",   label: "Text",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTkgOSBMMzEgOSBNMjAgOSBMMjAgMzIgTTE1IDMyIEwyNSAzMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+",   desc: "Text types words onto your picture." },
+    { id: "label",  label: "Label",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTYgMTIgTDI0IDEyIEwzMyAyMCBMMjQgMjggTDYgMjggWiIgZmlsbD0iI0Y0QzY0RSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMSAyMCBMMjAgMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",  desc: "Label adds words you can move and change later." },
+    { id: "fill",   label: "Fill",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTkgMTYgTDIwIDggTDMxIDE5IEwyMCAzMCBaIiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEyIDE5IEwyOCAxOSBMMjAgMjcgWiIgZmlsbD0iIzJCNEM5QiIvPjxwYXRoIGQ9Ik0zMSAyMSBDMzQgMjYgMzQgMjkgMzEuNSAzMCBDMjkgMjkgMjkgMjYgMzEgMjEgWiIgZmlsbD0iIzJCNEM5QiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjEuOCIvPjwvc3ZnPg==",   desc: "Fill pours color into a whole area at once." },
+    { id: "magic",  label: "Magic",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTggMzIgTDI0IDE2IiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMjggNSBMMjkuOCAxMCBMMzUgMTAuNSBMMzEgMTMuOCBMMzIuMiAxOSBMMjggMTYuMiBMMjMuOCAxOSBMMjUgMTMuOCBMMjEgMTAuNSBMMjYuMiAxMCBaIiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",  desc: "Magic has special effects that make or change things for you." },
+    { id: "eraser", label: "Eraser", icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTcgMjUgTDIwIDEyIEwzMSAyMyBMMjIgMzIgTDE0IDMyIFoiIGZpbGw9IiNGNEI2QzIiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTMgMTkgTDI0IDMwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMjIgMzMgTDMzIDMzIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=", desc: "Eraser rubs paint away." },
+    { id: "undo",   label: "Undo",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTEzIDEyIEw3IDE4IEwxMyAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTggMTggTDI0IDE4IEMzMCAxOCAzMyAyMiAzMyAyNiBDMzMgMzAgMzAgMzIgMjYgMzIgTDE4IDMyIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=",   desc: "Undo takes back your last change." },
+    { id: "redo",   label: "Redo",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTI3IDEyIEwzMyAxOCBMMjcgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0zMiAxOCBMMTYgMTggQzEwIDE4IDcgMjIgNyAyNiBDNyAzMCAxMCAzMiAxNCAzMiBMMjIgMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",   desc: "Redo brings back something you undid." },
+    { id: "new",    label: "New",    icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTEwIDUgTDI0IDUgTDMxIDEyIEwzMSAzNSBMMTAgMzUgWiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yNCA1IEwyNCAxMiBMMzEgMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yMC41IDE4IEwyMC41IDI4IE0xNS41IDIzIEwyNS41IDIzIiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjdBNUYiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=",    desc: "New starts a fresh, blank canvas." },
+    { id: "open",   label: "Open",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTUgMTIgTDE1IDEyIEwxOCAxNSBMMzUgMTUgTDM1IDMyIEw1IDMyIFoiIGZpbGw9IiNGNEM2NEUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNSAxOSBMMzUgMTkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",   desc: "Open loads a picture you saved before." },
+    { id: "save",   label: "Save",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTIwIDUgTDIwIDIyIE0xMyAxNSBMMjAgMjIgTDI3IDE1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjdBNUYiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTcgMjQgTDcgMzMgTDMzIDMzIEwzMyAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+",   desc: "Save keeps your picture so you can open it later." },
+    { id: "print",  label: "Print",  icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3QgeD0iMTIiIHk9IjUiIHdpZHRoPSIxNiIgaGVpZ2h0PSI5IiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMi42Ii8+PHJlY3QgeD0iNSIgeT0iMTQiIHdpZHRoPSIzMCIgaGVpZ2h0PSIxMyIgcng9IjMiIGZpbGw9IiM5Q0M3RTQiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyLjYiLz48cmVjdCB4PSIxMiIgeT0iMjMiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxMSIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIvPjwvc3ZnPg==",  desc: "Print sends your picture to a printer." },
+    { id: "quit",   label: "Quit",   icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZD0iTTggNiBMMjIgNiBMMjIgMzQgTDggMzQgWiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iMjEiIHI9IjEuNiIgZmlsbD0iIzFFMkE0QSIvPjxwYXRoIGQ9Ik0yNiAyMCBMMzUgMjAgTTMxIDE1IEwzNSAyMCBMMzEgMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0M4Mzg0RiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",   desc: "Quit closes the program." }
+  ],
+
+  /* Choices that open beside a tool. "noun" is used in the step tracker. */
+  options: {
+    fill: { title: "Pick a fill", noun: "Fill type", items: [
+      { id: "solid",  label: "Solid",  img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzJCNEM5QiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",  desc: "Solid fills with one flat color." },
+      { id: "brush",  label: "Brush",  img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAgMzAgQzE4IDEyIDI0IDM0IDMyIDE4IFMgNDYgMjYgNTAgMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCNEM5QiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=",  desc: "Brush fill lets you paint the fill in by hand." },
+      { id: "linear", label: "Linear", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMkI0QzlCIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRENFN0Y1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0idXJsKCNnKSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=", desc: "Linear fades the color in a straight line, dark to light." },
+      { id: "radial", label: "Radial", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJnIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNEQ0U3RjUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyQjRDOUIiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSI2IiB5PSI2IiB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==", desc: "Radial fades the color out from the middle, in a circle." }
+    ]},
+    paint: { title: "Pick a brush", noun: "Brush", items: [
+      { id: "round",   label: "Round",   img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIyMiIgcj0iMTMiIGZpbGw9IiMxRTJBNEEiLz48L3N2Zz4=",   desc: "Round makes smooth, even lines." },
+      { id: "square",  label: "Square",  img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHJlY3QgeD0iMTciIHk9IjkiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgZmlsbD0iIzFFMkE0QSIvPjwvc3ZnPg==",  desc: "Square makes lines with blocky edges." },
+      { id: "blotchy", label: "Blotchy", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGcgZmlsbD0iIzFFMkE0QSI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iMTAiLz48Y2lyY2xlIGN4PSIzNCIgY3k9IjE3IiByPSI3Ii8+PGNpcmNsZSBjeD0iMzUiIGN5PSIyOCIgcj0iNiIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iMTQiIHI9IjQiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjI5IiByPSI1Ii8+PGNpcmNsZSBjeD0iNDMiIGN5PSIyMiIgcj0iMyIvPjwvZz48L3N2Zz4=", desc: "Blotchy makes bumpy, uneven blobs." },
+      { id: "sparkle", label: "Sparkle", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHBhdGggZD0iTTMwIDYgTDMzLjUgMTggTDQ2IDIyIEwzMy41IDI2IEwzMCAzOCBMMjYuNSAyNiBMMTQgMjIgTDI2LjUgMTggWiIgZmlsbD0iIzFFMkE0QSIvPjwvc3ZnPg==", desc: "Sparkle leaves little star shapes." },
+      { id: "spray",   label: "Spray",   img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGcgZmlsbD0iIzFFMkE0QSI+PGNpcmNsZSBjeD0iMjIiIGN5PSIxMiIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzAiIGN5PSIxMCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzgiIGN5PSIxNCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMTgiIGN5PSIyMCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSIxOCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzQiIGN5PSIyMCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyMiIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMjIiIGN5PSIyNyIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzAiIGN5PSIyNiIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzgiIGN5PSIzMCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSIzNCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMzQiIGN5PSIzNSIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSIyOCIgcj0iMS42Ii8+PGNpcmNsZSBjeD0iNDQiIGN5PSIxNSIgcj0iMS42Ii8+PC9nPjwvc3ZnPg==",   desc: "Spray sprinkles lots of tiny dots." }
+    ]},
+    magic: { title: "Pick an effect", noun: "Effect", items: [
+      { id: "rainbow",  label: "Rainbow",  img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHBhdGggZD0iTTEwIDM2IEEyMCAyMCAwIDAgMSA1MCAzNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzgzODRGIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMTUgMzYgQTE1IDE1IDAgMCAxIDQ1IDM2IiBmaWxsPSJub25lIiBzdHJva2U9IiNGNEM2NEUiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMCAzNiBBMTAgMTAgMCAwIDEgNDAgMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGN0E1RiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTI1IDM2IEE1IDUgMCAwIDEgMzUgMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCNEM5QiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+",  desc: "Rainbow paints with colors that keep changing." },
+      { id: "smudge",   label: "Smudge",   img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNkI1QkE4Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmZmZmZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAgMTYgQzIyIDEyIDM0IDIwIDUwIDE0IE0xMCAyMyBDMjQgMjAgMzYgMjYgNTAgMjIgTTEwIDMwIEMyMiAyOCAzNiAzMyA1MCAyOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2cpIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",   desc: "Smudge pushes colors into each other, like a finger in wet paint." },
+      { id: "bricks",   label: "Bricks",   img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGcgZmlsbD0iI0MwNTczRSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiPjxyZWN0IHg9IjYiIHk9IjgiIHdpZHRoPSIyMiIgaGVpZ2h0PSI5Ii8+PHJlY3QgeD0iMzAiIHk9IjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI5Ii8+PHJlY3QgeD0iNiIgeT0iMTgiIHdpZHRoPSIxMSIgaGVpZ2h0PSI5Ii8+PHJlY3QgeD0iMTkiIHk9IjE4IiB3aWR0aD0iMjIiIGhlaWdodD0iOSIvPjxyZWN0IHg9IjQzIiB5PSIxOCIgd2lkdGg9IjExIiBoZWlnaHQ9IjkiLz48cmVjdCB4PSI2IiB5PSIyOCIgd2lkdGg9IjIyIiBoZWlnaHQ9IjkiLz48cmVjdCB4PSIzMCIgeT0iMjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI5Ii8+PC9nPjwvc3ZnPg==",   desc: "Bricks paints a brick wall pattern." },
+      { id: "grass",    label: "Grass",    img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkY3QTVGIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMTAgMzggQzEwIDI4IDEyIDIyIDEzLjIgMTQiLz48cGF0aCBkPSJNMTYgMzggQzE2IDI4IDEzIDIyIDExLjIgMTgiLz48cGF0aCBkPSJNMjIgMzggQzIyIDI4IDI1IDIyIDI2LjggMTAiLz48cGF0aCBkPSJNMjggMzggQzI4IDI4IDI2IDIyIDI0LjggMTYiLz48cGF0aCBkPSJNMzQgMzggQzM0IDI4IDM4IDIyIDQwLjQgMTIiLz48cGF0aCBkPSJNNDAgMzggQzQwIDI4IDM3IDIyIDM1LjIgMTgiLz48cGF0aCBkPSJNNDYgMzggQzQ2IDI4IDQ4IDIyIDQ5LjIgMTAiLz48cGF0aCBkPSJNNTEgMzggQzUxIDI4IDQ5IDIyIDQ3LjggMTYiLz48L2c+PC9zdmc+",    desc: "Grass grows blades of grass." },
+      { id: "negative", label: "Negative", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjI0IiBoZWlnaHQ9IjMyIiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjMwIiB5PSI2IiB3aWR0aD0iMjQiIGhlaWdodD0iMzIiIGZpbGw9IiMyQjRDOUIiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMzAiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzJCNEM5QiIvPjxwYXRoIGQ9Ik0zMCAxMyBBOSA5IDAgMCAxIDMwIDMxIFoiIGZpbGw9IiNGNEM2NEUiLz48L3N2Zz4=", desc: "Negative flips colors to their opposites." }
+    ]},
+    stamp: { title: "Pick a stamp", noun: "Stamp", items: [
+      { id: "sun",       label: "Sun",       img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZyBzdHJva2U9IiNGMjhDMjgiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCB0cmFuc2Zvcm09InJvdGF0ZSgwIDUwIDUwKSIgZD0iTTUwIDYgTDUwIDE4IiAvPjxwYXRoIHRyYW5zZm9ybT0icm90YXRlKDQ1IDUwIDUwKSIgZD0iTTUwIDYgTDUwIDE4IiAvPjxwYXRoIHRyYW5zZm9ybT0icm90YXRlKDkwIDUwIDUwKSIgZD0iTTUwIDYgTDUwIDE4IiAvPjxwYXRoIHRyYW5zZm9ybT0icm90YXRlKDEzNSA1MCA1MCkiIGQ9Ik01MCA2IEw1MCAxOCIgLz48cGF0aCB0cmFuc2Zvcm09InJvdGF0ZSgxODAgNTAgNTApIiBkPSJNNTAgNiBMNTAgMTgiIC8+PHBhdGggdHJhbnNmb3JtPSJyb3RhdGUoMjI1IDUwIDUwKSIgZD0iTTUwIDYgTDUwIDE4IiAvPjxwYXRoIHRyYW5zZm9ybT0icm90YXRlKDI3MCA1MCA1MCkiIGQ9Ik01MCA2IEw1MCAxOCIgLz48cGF0aCB0cmFuc2Zvcm09InJvdGF0ZSgzMTUgNTAgNTApIiBkPSJNNTAgNiBMNTAgMTgiIC8+PC9nPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjIyIiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiNGMjhDMjgiIHN0cm9rZS13aWR0aD0iNCIvPjwvc3ZnPg==",       desc: "That's the sun stamp." },
+      { id: "snowman",   label: "Snowman",   img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTMwIj4KPHBhdGggZD0iTTI0IDYyIEw4IDQ4IE04IDQ4IEw0IDUwIE04IDQ4IEw3IDQzIiBmaWxsPSJub25lIiBzdHJva2U9IiM3QTRFMkQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik03NiA2MiBMOTIgNDggTTkyIDQ4IEw5NiA1MCBNOTIgNDggTDkzIDQzIiBmaWxsPSJub25lIiBzdHJva2U9IiM3QTRFMkQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxlbGxpcHNlIGN4PSI1MCIgY3k9IjEyNiIgcng9IjM0IiByeT0iNCIgZmlsbD0iI0M5RDhFNCIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9Ijk4IiByPSIyOSIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQjhDOUQ4IiBzdHJva2Utd2lkdGg9IjIuNSIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9IjYwIiByPSIyMiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQjhDOUQ4IiBzdHJva2Utd2lkdGg9IjIuNSIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9IjI5IiByPSIxNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQjhDOUQ4IiBzdHJva2Utd2lkdGg9IjIuNSIvPgo8cGF0aCBkPSJNMzMgNDQgQzQyIDQ5IDU4IDQ5IDY3IDQ0IEw2NyA1MSBDNTggNTUgNDIgNTUgMzMgNTEgWiIgZmlsbD0iI0M4Mzg0RiIvPgo8cGF0aCBkPSJNNTggNTAgTDY0IDY2IEw1NiA2NiBMNTIgNTIgWiIgZmlsbD0iI0M4Mzg0RiIvPgo8cmVjdCB4PSIzNiIgeT0iMTMiIHdpZHRoPSIyOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzFFMkE0QSIvPgo8cmVjdCB4PSI0MCIgeT0iMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiByeD0iMiIgZmlsbD0iIzFFMkE0QSIvPgo8Y2lyY2xlIGN4PSI0NCIgY3k9IjI2IiByPSIyIiBmaWxsPSIjMUUyQTRBIi8+PGNpcmNsZSBjeD0iNTYiIGN5PSIyNiIgcj0iMiIgZmlsbD0iIzFFMkE0QSIvPgo8cGF0aCBkPSJNNTAgMzAgTDYxIDMzIEw1MCAzNCBaIiBmaWxsPSIjRjI4QzI4Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNjMiIHI9IjIuMiIgZmlsbD0iIzFFMkE0QSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNzIiIHI9IjIuMiIgZmlsbD0iIzFFMkE0QSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iOTAiIHI9IjIuNCIgZmlsbD0iIzFFMkE0QSIvPjwvc3ZnPg==",   desc: "That's the snowman stamp." },
+      { id: "flower",    label: "Flower",    img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAgNTAgTDUwIDk2IiBzdHJva2U9IiMyRjdBNUYiIHN0cm9rZS13aWR0aD0iNSIvPjxwYXRoIGQ9Ik01MCA3OCBDMzggNzAgMzAgNzQgMjggODAgQzM4IDg0IDQ2IDgyIDUwIDc4IiBmaWxsPSIjMkY3QTVGIi8+PGVsbGlwc2UgdHJhbnNmb3JtPSJyb3RhdGUoMCA1MCA0MCkiIGN4PSI1MCIgY3k9IjIyIiByeD0iMTAiIHJ5PSIxNSIgZmlsbD0iI0U4N0NBOCIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSB0cmFuc2Zvcm09InJvdGF0ZSg3MiA1MCA0MCkiIGN4PSI1MCIgY3k9IjIyIiByeD0iMTAiIHJ5PSIxNSIgZmlsbD0iI0U4N0NBOCIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSB0cmFuc2Zvcm09InJvdGF0ZSgxNDQgNTAgNDApIiBjeD0iNTAiIGN5PSIyMiIgcng9IjEwIiByeT0iMTUiIGZpbGw9IiNFODdDQTgiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGVsbGlwc2UgdHJhbnNmb3JtPSJyb3RhdGUoMjE2IDUwIDQwKSIgY3g9IjUwIiBjeT0iMjIiIHJ4PSIxMCIgcnk9IjE1IiBmaWxsPSIjRTg3Q0E4IiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMiIvPjxlbGxpcHNlIHRyYW5zZm9ybT0icm90YXRlKDI4OCA1MCA0MCkiIGN4PSI1MCIgY3k9IjIyIiByeD0iMTAiIHJ5PSIxNSIgZmlsbD0iI0U4N0NBOCIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjQwIiByPSI5IiBmaWxsPSIjRjRDNjRFIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==",    desc: "That's the flower stamp." },
+      { id: "snowflake", label: "Snowflake", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0M3RTQiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNTAgNTApIj48cGF0aCBkPSJNNTAgNTAgTDUwIDggTTUwIDIyIEw0MSAxNCBNNTAgMjIgTDU5IDE0IE01MCAzNCBMNDMgMjggTTUwIDM0IEw1NyAyOCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNTAgNTApIj48cGF0aCBkPSJNNTAgNTAgTDUwIDggTTUwIDIyIEw0MSAxNCBNNTAgMjIgTDU5IDE0IE01MCAzNCBMNDMgMjggTTUwIDM0IEw1NyAyOCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgxODAgNTAgNTApIj48cGF0aCBkPSJNNTAgNTAgTDUwIDggTTUwIDIyIEw0MSAxNCBNNTAgMjIgTDU5IDE0IE01MCAzNCBMNDMgMjggTTUwIDM0IEw1NyAyOCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgyNDAgNTAgNTApIj48cGF0aCBkPSJNNTAgNTAgTDUwIDggTTUwIDIyIEw0MSAxNCBNNTAgMjIgTDU5IDE0IE01MCAzNCBMNDMgMjggTTUwIDM0IEw1NyAyOCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgzMDAgNTAgNTApIj48cGF0aCBkPSJNNTAgNTAgTDUwIDggTTUwIDIyIEw0MSAxNCBNNTAgMjIgTDU5IDE0IE01MCAzNCBMNDMgMjggTTUwIDM0IEw1NyAyOCIvPjwvZz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCA1MCA1MCkiPjxwYXRoIGQ9Ik01MCA1MCBMNTAgOCBNNTAgMjIgTDQxIDE0IE01MCAyMiBMNTkgMTQgTTUwIDM0IEw0MyAyOCBNNTAgMzQgTDU3IDI4Ii8+PC9nPjxnIHRyYW5zZm9ybT0icm90YXRlKDYwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMTIwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMTgwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMjQwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMzAwIDUwIDUwKSI+PHBhdGggZD0iTTUwIDUwIEw1MCA4IE01MCAyMiBMNDEgMTQgTTUwIDIyIEw1OSAxNCBNNTAgMzQgTDQzIDI4IE01MCAzNCBMNTcgMjgiLz48L2c+PC9nPjwvc3ZnPg==", desc: "That's the snowflake stamp." },
+      { id: "fish",      label: "Fish",      img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNMTggNTAgQzMwIDI2IDY2IDI2IDc4IDUwIEM2NiA3NCAzMCA3NCAxOCA1MCBaIiBmaWxsPSIjRjI4QzI4IiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik03OCA1MCBMOTYgMzQgTDk0IDY2IFoiIGZpbGw9IiNGMjhDMjgiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iMzQiIGN5PSI0NiIgcj0iMy41IiBmaWxsPSIjMUUyQTRBIi8+PHBhdGggZD0iTTUwIDM2IEM1NiA0NCA1NiA1NiA1MCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNSIvPjwvc3ZnPg==",      desc: "That's the fish stamp." },
+      { id: "tree",      label: "Pine tree", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB4PSI0NCIgeT0iNzgiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxOCIgZmlsbD0iIzdBNEUyRCIvPjxwYXRoIGQ9Ik01MCA2IEw3NCA0MCBMNjIgNDAgTDgyIDY2IEw2NiA2NiBMODggODQgTDEyIDg0IEwzNCA2NiBMMTggNjYgTDM4IDQwIEwyNiA0MCBaIiBmaWxsPSIjMkY3QTVGIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",      desc: "That's the pine tree stamp." }
+    ]},
+    shapes: { title: "Pick a shape", noun: "Shape", items: [
+      { id: "circle",   label: "Circle",        img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIyMiIgcj0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFMkE0QSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+",   desc: "Circle draws a round outline that is empty inside." },
+      { id: "filled",   label: "Filled circle", img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIyMiIgcj0iMTQiIGZpbGw9IiMxRTJBNEEiLz48L3N2Zz4=",   desc: "Filled circle draws a round shape colored in all over." },
+      { id: "square",   label: "Square",        img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHJlY3QgeD0iMTciIHk9IjkiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",   desc: "Square draws a shape with four equal sides." },
+      { id: "triangle", label: "Triangle",      img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHBhdGggZD0iTTMwIDcgTDQ1IDM2IEwxNSAzNiBaIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTJBNEEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==", desc: "Triangle draws a shape with three sides." },
+      { id: "star",     label: "Star",          img: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA0NCI+PHBhdGggZD0iTTMwIDYgTDM0LjUgMTcgTDQ2IDE3LjUgTDM3IDI1IEw0MCAzNi41IEwzMCAzMCBMMjAgMzYuNSBMMjMgMjUgTDE0IDE3LjUgTDI1LjUgMTcgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUUyQTRBIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==",     desc: "Star draws a pointy star outline." }
+    ]}
+  },
+
+  colors: [
+    { id: "black",     name: "black",      hex: "#222831" },
+    { id: "white",     name: "white",      hex: "#FFFFFF" },
+    { id: "red",       name: "red",        hex: "#C9473B" },
+    { id: "orange",    name: "orange",     hex: "#F28C28" },
+    { id: "yellow",    name: "yellow",     hex: "#F5CF3B" },
+    { id: "green",     name: "green",      hex: "#3E9B4F" },
+    { id: "lightblue", name: "light blue", hex: "#8FD0EE" },
+    { id: "darkblue",  name: "dark blue",  hex: "#2B4C9B" },
+    { id: "purple",    name: "purple",     hex: "#6B5BA8" },
+    { id: "pink",      name: "pink",       hex: "#E87CA8" },
+    { id: "brown",     name: "brown",      hex: "#8A5A3B" },
+    { id: "gray",      name: "gray",       hex: "#9AA3AD" }
+  ],
+
+  /* ---------------- SCENES ----------------
+     Each instruction names the EFFECT. The player works out the TOOL.
+     action.do: fill | columns | stamp | shape | sparkle | text | erase | save
+     action.auto: spots used for the preview picture and for keyboard players. */
+  scenes: [
+    {
+      id: "winter",
+      name: "Winter Card",
+      thumbLine: "Mountains, snow and a snowman",
+      goal: "A winter card for Hazel's grandma",
+      brief: "My grandma loves snow! Let's make her a winter card with a fading sky, rocky mountains, a snowman and falling snowflakes.",
+      greeting: "Warm winter wishes, Grandma!",
+      steps: [
+        { instruction: "A sky that fades from dark blue to light",
+          tool: "fill", option: "linear", color: "darkblue",
+          action: { do: "fill", region: "sky", mode: "linear" },
+          intro: "First, the sky! Dark blue at the top, fading lighter down to the snow. Which tool colors a big area all at once?",
+          nudge: "We need to color the whole sky in one go.",
+          toolRight: "Yes, Fill! Now pick the fill that fades.",
+          optionNudge: "The sky should fade from dark at the top to light at the bottom.",
+          optionRight: "Linear! It fades color in a straight line.",
+          colorPrompt: "Now pick dark blue.",
+          doPrompt: "Click anywhere in the sky.",
+          missPrompt: "That's the snowy ground. Click above the line, in the sky.",
+          success: "Ooh, a dreamy winter sky!" },
+        { instruction: "Rocky purple mountains",
+          tool: "paint", option: "blotchy", color: "purple",
+          action: { do: "columns", effect: "blotchy", zone: "ridge" },
+          intro: "Next, mountains with a bumpy, rocky look. Which tool lets you draw by hand with a brush?",
+          nudge: "We want to draw the mountains by hand, with a brush.",
+          toolRight: "Paint it is! Now pick a brush for rocky shapes.",
+          optionNudge: "Real mountains look rocky and bumpy, not smooth.",
+          optionRight: "Blotchy! Bumpy blobs are perfect for rocks.",
+          colorPrompt: "Now pick purple.",
+          doPrompt: "Drag along the dotted line, left to right.",
+          missPrompt: "Paint close to the dotted mountain line.",
+          success: "Those purple mountains look great!" },
+        { instruction: "Snow blended softly into the mountains",
+          tool: "magic", option: "smudge", color: null,
+          action: { do: "columns", effect: "smudge", zone: "snowline" },
+          intro: "The mountains meet the snow with a hard edge. Let's blend them softly. Which tool changes what's already there?",
+          nudge: "We need to change the paint that's already there, not add new paint.",
+          toolRight: "Magic, yes! Now pick the effect that blends colors.",
+          optionNudge: "We want to push the snow and mountains into each other, like a finger in wet paint.",
+          optionRight: "Smudge! It mixes colors like a finger in wet paint.",
+          doPrompt: "Drag along the glowing strip.",
+          missPrompt: "Smudge along the glowing strip at the bottom of the mountains.",
+          success: "So soft and snowy. Lovely!" },
+        { instruction: "A snowman standing on the snow",
+          tool: "stamp", option: "snowman", color: null,
+          action: { do: "stamp", stamp: "snowman", region: "ground", count: 1, w: 86, h: 112, anchor: "bottom", auto: [[420, 330]] },
+          intro: "Now a snowman! Drawing one would take ages. Which tool drops in a ready-made picture?",
+          nudge: "We want a ready-made picture, not one we draw ourselves.",
+          toolRight: "Stamp! Now pick the right stamp.",
+          optionNudge: "Look for the snowman.",
+          optionRight: "That's the snowman.",
+          doPrompt: "Click on the snowy ground.",
+          missPrompt: "Snowmen stand on snow. Click the white ground.",
+          success: "Hello, snowman!" },
+        { instruction: "Four snowflakes in the sky",
+          tool: "stamp", option: "snowflake", color: null,
+          action: { do: "stamp", stamp: "snowflake", region: "skyHigh", count: 4, size: [20, 38], rotate: true, auto: [[90, 50], [230, 36], [400, 44], [500, 90]] },
+          intro: "Let's add snowflakes. Which tool can drop the same picture again and again?",
+          nudge: "We want the same ready-made picture, many times.",
+          toolRight: "Stamp again! Now find the snowflake.",
+          optionNudge: "Find the snowflake.",
+          optionRight: "Snowflake, got it.",
+          doPrompt: "Click 4 spots in the sky.",
+          missPrompt: "Snowflakes belong up in the sky. Click above the snow.",
+          success: "It's snowing on the card!" },
+        { instruction: "Save the finished card",
+          tool: "save", action: { do: "save" },
+          intro: "The card is finished! What should we do so it doesn't get lost?",
+          nudge: "We need to keep the picture so we can open it again later.",
+          success: "Saved! The card is safe." }
+      ]
+    },
+
+    {
+      id: "sea",
+      name: "Under the Sea",
+      thumbLine: "Glowing water, sand, fish and bubbles",
+      goal: "An under-the-sea poster for the class aquarium",
+      brief: "Our class has a new aquarium! Let's make a poster with glowing water, a sandy seabed, fish and bubbles.",
+      greeting: "",
+      steps: [
+        { instruction: "Water that glows in the middle and is dark blue at the edges",
+          tool: "fill", option: "radial", color: "darkblue",
+          action: { do: "fill", region: "water", mode: "radial" },
+          intro: "Let's fill the water first. It should glow in the middle and get darker at the edges. Which tool colors a big area all at once?",
+          nudge: "We need to color all the water in one go.",
+          toolRight: "Yes, Fill! Now pick the fill that glows from the middle.",
+          optionNudge: "We want the color to spread out from the middle, in a circle.",
+          optionRight: "Radial! It fades out from the middle in a circle.",
+          colorPrompt: "Now pick dark blue.",
+          doPrompt: "Click anywhere in the water.",
+          missPrompt: "That's the seabed. Click above the line, in the water.",
+          success: "The water is glowing!" },
+        { instruction: "A sandy seabed made of tiny yellow dots",
+          tool: "paint", option: "spray", color: "yellow",
+          action: { do: "columns", effect: "spray", zone: "sand" },
+          intro: "Now the sandy seabed. Sand is lots of tiny grains. Which tool lets you draw by hand with a brush?",
+          nudge: "We want to brush the sand on by hand.",
+          toolRight: "Paint! Now pick a brush for tiny grains of sand.",
+          optionNudge: "Sand looks like lots and lots of tiny dots.",
+          optionRight: "Spray! It sprinkles tiny dots.",
+          colorPrompt: "Now pick yellow.",
+          doPrompt: "Drag along the glowing strip at the bottom.",
+          missPrompt: "Spray along the glowing strip at the bottom.",
+          success: "A soft, sandy seabed!" },
+        { instruction: "Three fish swimming in the water",
+          tool: "stamp", option: "fish", color: null,
+          action: { do: "stamp", stamp: "fish", region: "waterSafe", count: 3, w: 58, h: 58, flip: true, auto: [[130, 110], [330, 70], [420, 180]] },
+          intro: "Time for some fish! Which tool drops in ready-made pictures?",
+          nudge: "We want ready-made pictures, not ones we draw ourselves.",
+          toolRight: "Stamp! Now pick the right stamp.",
+          optionNudge: "Look for the fish.",
+          optionRight: "The fish stamp!",
+          doPrompt: "Click 3 spots in the water.",
+          missPrompt: "Fish swim in the water. Click above the sand.",
+          success: "Swish, swish! Three happy fish." },
+        { instruction: "Three bubbles drawn as white outlines",
+          tool: "shapes", option: "circle", color: "white",
+          action: { do: "shape", shape: "circle", region: "waterSafe", count: 3, r: [9, 16], auto: [[175, 70], [190, 40], [460, 120]] },
+          intro: "Fish blow bubbles! A bubble is a round outline. Which tool makes circles, squares and stars?",
+          nudge: "We need a perfectly round shape.",
+          toolRight: "Shapes! Now pick a round outline, empty inside.",
+          optionNudge: "A bubble is round and empty inside.",
+          optionRight: "Circle! An outline with nothing inside.",
+          colorPrompt: "Now pick white.",
+          doPrompt: "Click 3 spots in the water.",
+          missPrompt: "Bubbles float in the water. Click above the sand.",
+          success: "Blub, blub, blub!" },
+        { instruction: "Save the finished poster",
+          tool: "save", action: { do: "save" },
+          intro: "The poster is ready! What should we do so it doesn't get lost?",
+          nudge: "We need to keep the picture so we can open it again later.",
+          success: "Saved! The poster is safe." }
+      ]
+    },
+
+    {
+      id: "night",
+      name: "Night Sky",
+      thumbLine: "Stars, a moon and a bedtime message",
+      goal: "A bedtime picture for baby Pip",
+      brief: "My baby brother Pip is scared of the dark. Let's make him a calm night sky with stars, a big moon and a good-night message.",
+      greeting: "",
+      steps: [
+        { instruction: "A dark night sky in one flat color",
+          tool: "fill", option: "solid", color: "black",
+          action: { do: "fill", region: "sky", mode: "solid" },
+          intro: "First, a dark night sky, all one flat color. Which tool colors a big area all at once?",
+          nudge: "We need to color the whole sky in one go.",
+          toolRight: "Fill! Now pick the fill with no fading.",
+          optionNudge: "The night sky should be one flat color, with no fading.",
+          optionRight: "Solid! One flat color all over.",
+          colorPrompt: "Now pick black.",
+          doPrompt: "Click anywhere in the sky.",
+          missPrompt: "That's the hill. Click above the line, in the sky.",
+          success: "Nice and dark. Shh!" },
+        { instruction: "Twinkly yellow stars",
+          tool: "paint", option: "sparkle", color: "yellow",
+          action: { do: "sparkle", region: "skyHigh", count: 10, auto: [[60, 40], [140, 90], [210, 30], [300, 70], [360, 130], [470, 40], [500, 120], [90, 150], [250, 160], [400, 90]] },
+          intro: "Now some twinkly stars. Which tool lets you draw by hand with a brush?",
+          nudge: "We want to brush the stars on by hand.",
+          toolRight: "Paint! Now pick the brush that makes stars.",
+          optionNudge: "Look for the brush that leaves star shapes.",
+          optionRight: "Sparkle! It leaves little stars.",
+          colorPrompt: "Now pick yellow.",
+          doPrompt: "Drag around the sky to sprinkle 10 stars.",
+          missPrompt: "Stars go up in the sky.",
+          success: "Twinkle, twinkle!" },
+        { instruction: "A big, round white moon",
+          tool: "shapes", option: "filled", color: "white",
+          action: { do: "shape", shape: "filled", region: "moonZone", count: 1, r: [30, 30], auto: [[440, 70]] },
+          intro: "Every night sky needs a moon. Which tool makes circles, squares and stars?",
+          nudge: "We need a perfectly round shape.",
+          toolRight: "Shapes! The moon is round and colored in. Pick that shape.",
+          optionNudge: "The moon is round and colored in all over, not empty.",
+          optionRight: "Filled circle! Round and colored in.",
+          colorPrompt: "Now pick white.",
+          doPrompt: "Click in the sky where the moon should go.",
+          missPrompt: "The moon goes up in the sky.",
+          success: "What a bright moon!" },
+        { instruction: "The words “Good night, Pip!” on the hill",
+          tool: "text", option: null, color: "darkblue",
+          action: { do: "text", text: "Good night, Pip!", region: "hillText", auto: [[200, 312]] },
+          intro: "Let's write “Good night, Pip!” on the hill. Which tool types words onto the picture?",
+          nudge: "We need to type some words.",
+          toolNotes: { label: "Label adds words you can move later. That works too, but here we'll use plain Text." },
+          toolRight: "Text! It types words onto your picture.",
+          colorPrompt: "Now pick dark blue, so the words show on the white hill.",
+          doPrompt: "Click on the white hill.",
+          missPrompt: "Write the words on the white hill.",
+          success: "Good night, baby Pip!" },
+        { instruction: "Save the finished picture",
+          tool: "save", action: { do: "save" },
+          intro: "The picture is ready! What should we do so it doesn't get lost?",
+          nudge: "We need to keep the picture so we can open it again later.",
+          success: "Saved! Pip's picture is safe." }
+      ]
+    },
+
+    {
+      id: "garden",
+      name: "Garden Wall",
+      thumbLine: "Bricks, grass and flowers",
+      goal: "A garden picture for the school fair",
+      brief: "The school fair needs a garden picture! But first we have to clean up our paper. Then we'll add a sky, a brick wall, grass and flowers.",
+      greeting: "",
+      steps: [
+        { instruction: "Rub out the red scribble",
+          tool: "eraser", option: null, color: null,
+          action: { do: "erase" },
+          intro: "Oops! Someone scribbled on our paper. Which tool rubs paint away?",
+          nudge: "We need to get rid of the scribble.",
+          toolNotes: {
+            undo: "Undo takes back YOUR last change. This scribble was already on the paper, so Undo can't help.",
+            new: "New would throw away the whole paper. We only need to remove the scribble."
+          },
+          toolRight: "Eraser! It rubs paint away.",
+          doPrompt: "Rub over the scribble until it's gone.",
+          missPrompt: "Rub right over the red scribble.",
+          success: "Squeaky clean!" },
+        { instruction: "A light blue sky in one flat color",
+          tool: "fill", option: "solid", color: "lightblue",
+          action: { do: "fill", region: "sky", mode: "solid" },
+          intro: "Now a sunny sky above the wall, all one flat color. Which tool colors a big area all at once?",
+          nudge: "We need to color the whole sky in one go.",
+          toolRight: "Fill! Now pick the fill with no fading.",
+          optionNudge: "The sky should be one flat color, with no fading.",
+          optionRight: "Solid! One flat color.",
+          colorPrompt: "Now pick light blue.",
+          doPrompt: "Click in the sky, above the wall.",
+          missPrompt: "Click above the top line, in the sky.",
+          success: "A bright, sunny sky!" },
+        { instruction: "A red brick wall",
+          tool: "magic", option: "bricks", color: "red",
+          action: { do: "columns", effect: "bricks", zone: "wall" },
+          intro: "Now the garden wall. Drawing every brick would take forever! Which tool has special effects?",
+          nudge: "We want a special effect that makes the pattern for us.",
+          toolRight: "Magic! Now pick the effect that builds a wall.",
+          optionNudge: "Look for the effect that makes a brick pattern.",
+          optionRight: "Bricks!",
+          colorPrompt: "Now pick red.",
+          doPrompt: "Drag across the glowing wall area.",
+          missPrompt: "Build bricks inside the glowing wall area.",
+          success: "A strong brick wall!" },
+        { instruction: "Green grass on the ground",
+          tool: "magic", option: "grass", color: "green",
+          action: { do: "columns", effect: "grass", zone: "lawn" },
+          intro: "The ground needs grass. Which tool has special effects?",
+          nudge: "We want a special effect that grows grass for us.",
+          toolRight: "Magic again! Now pick the effect that grows grass.",
+          optionNudge: "Look for the effect that grows grass.",
+          optionRight: "Grass!",
+          colorPrompt: "Now pick green.",
+          doPrompt: "Drag along the glowing ground.",
+          missPrompt: "Grow grass on the ground below the wall.",
+          success: "Fresh green grass!" },
+        { instruction: "Three flowers on the grass",
+          tool: "stamp", option: "flower", color: null,
+          action: { do: "stamp", stamp: "flower", region: "lawn", count: 3, w: 62, h: 62, anchor: "bottom", auto: [[110, 320], [270, 300], [430, 330]] },
+          intro: "Last, some flowers! Which tool drops in ready-made pictures?",
+          nudge: "We want ready-made pictures, not ones we draw ourselves.",
+          toolRight: "Stamp! Now pick the right stamp.",
+          optionNudge: "Look for the flower.",
+          optionRight: "The flower stamp!",
+          doPrompt: "Click 3 spots on the grass.",
+          missPrompt: "Flowers grow in the grass. Click below the wall.",
+          success: "Pretty flowers!" },
+        { instruction: "Save the finished picture",
+          tool: "save", action: { do: "save" },
+          intro: "The picture is ready for the fair! What should we do so it doesn't get lost?",
+          nudge: "We need to keep the picture so we can open it again later.",
+          success: "Saved! Ready for the fair." }
+      ]
+    }
+  ],
+
+  text: {
+    welcome: "Hi, I'm Hazel! Welcome to my art studio. Every picture needs the right tools. Pick a picture and I'll show you what to make.",
+    menuTitle: "Pick a picture to paint",
+    menuSub: "Each picture uses different tools. Try them all!",
+    drawerEmpty: "Pick a tool. Its choices will open here.",
+    drawerWrongTool: "That tool isn't the one for this step. Try another tool.",
+    drawerNoOptions: "has no choices to pick.",
+    wrongToolForOption: "But this step needs a different tool first.",
+    colorNotNeeded: "This step doesn't need a color.",
+    canvasNotReady: "Pick the right tool first, then use it here on the card.",
+    stars3: "Perfect! You knew the right tool every time.",
+    stars2: "Great work! A few tries, and you found every tool.",
+    stars1: "You did it! Each try taught you a new tool.",
+    finalHazel: "It's perfect! Thank you!"
+  }
+};
+
+</script>
+<script>
+/* Tiny Web Audio sound kit — every sound is synthesised, so there are no audio files to load. */
+window.WSW = window.WSW || {};
+WSW.Audio = {
+  ctx: null,
+  muted: false,
+  lastDab: 0,
+
+  unlock: function () {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; }
+    }
+    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+  },
+
+  tone: function (freq, dur, type, vol, delay, slideTo) {
+    var c = this.ctx;
+    if (!c) return;
+    var t = c.currentTime + (delay || 0);
+    var o = c.createOscillator();
+    var g = c.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.06, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+
+  play: function (name) {
+    if (this.muted || !this.ctx) return;
+    switch (name) {
+      case "click": this.tone(700, 0.05, "triangle", 0.04); break;
+      case "good":  this.tone(660, 0.1, "triangle", 0.06); this.tone(990, 0.14, "triangle", 0.06, 0.08); break;
+      case "oops":  this.tone(260, 0.16, "sine", 0.07, 0, 200); break;
+      case "pour":  this.tone(240, 0.9, "sine", 0.05, 0, 760); break;
+      case "stamp": this.tone(150, 0.09, "square", 0.035); this.tone(520, 0.06, "triangle", 0.04, 0.05); break;
+      case "save":  this.tone(784, 0.1, "triangle", 0.06); this.tone(1175, 0.18, "triangle", 0.06, 0.09); break;
+      case "dab":
+        var now = performance.now();
+        if (now - this.lastDab < 70) return;
+        this.lastDab = now;
+        this.tone(320 + Math.random() * 160, 0.05, "triangle", 0.025);
+        break;
+      case "done":
+        var notes = [523, 659, 784, 1047];
+        for (var i = 0; i < notes.length; i++) this.tone(notes[i], 0.18, "triangle", 0.06, i * 0.09);
+        break;
+    }
+  }
+};
+
+</script>
+<script>
+/* Scene geometry: the starter outlines on each card, the regions you click,
+   and the zones you drag across. Logical canvas size is 540 x 360.
+   Line specs: a name ("ground"), a number (150) or { line: "ground", dy: -30 }. */
+window.WSW = window.WSW || {};
+(function () {
+  function poly(points) {
+    return function (x) {
+      for (var i = 0; i < points.length - 1; i++) {
+        var a = points[i], b = points[i + 1];
+        if (x <= b[0]) return a[1] + (b[1] - a[1]) * ((x - a[0]) / (b[0] - a[0]));
+      }
+      return points[points.length - 1][1];
+    };
+  }
+  var OUTLINE = "#B8C9D8";
+
+  WSW.Scenes = {
+    winter: {
+      lines: {
+        ground: function (x) { return 262 + 9 * Math.sin(x * 0.011 + 0.4) + 5 * Math.sin(x * 0.029 + 1.7); },
+        ridge: poly([[0, 196], [50, 160], [105, 182], [175, 104], [235, 168], [285, 140], [355, 78], [425, 158], [470, 128], [540, 172]])
+      },
+      outlines: [{ line: "ground", color: OUTLINE }],
+      regions: {
+        sky: { bottom: "ground" },
+        skyHigh: { bottom: "ground", margin: 20 },
+        ground: { top: "ground" }
+      },
+      zones: {
+        ridge: { top: "ridge", bottom: { line: "ground", dy: 4 }, clip: "sky", near: [45, 8], guide: "topline", brush: 9 },
+        snowline: { top: { line: "ground", dy: -30 }, bottom: { line: "ground", dy: 12 }, line: "ground", near: [8, 8], guide: "band", brush: 13 }
+      }
+    },
+
+    sea: {
+      lines: {
+        sand: function (x) { return 284 + 7 * Math.sin(x * 0.021 + 0.5) + 4 * Math.sin(x * 0.05); }
+      },
+      outlines: [{ line: "sand", color: "#D7C79C" }],
+      regions: {
+        water: { bottom: "sand" },
+        waterSafe: { bottom: "sand", margin: 22 }
+      },
+      zones: {
+        sand: { top: { line: "sand", dy: -4 }, bottom: 360, near: [30, 10], guide: "band", brush: 11 }
+      }
+    },
+
+    night: {
+      lines: {
+        hill: function (x) { return 270 - 30 * Math.exp(-Math.pow((x - 170) / 120, 2)) - 16 * Math.exp(-Math.pow((x - 440) / 90, 2)); }
+      },
+      outlines: [{ line: "hill", color: OUTLINE }],
+      regions: {
+        sky: { bottom: "hill" },
+        skyHigh: { bottom: "hill", margin: 14 },
+        moonZone: { bottom: "hill", margin: 34 },
+        hillText: { top: { line: "hill", dy: 14 }, bottom: 352 }
+      },
+      zones: {}
+    },
+
+    garden: {
+      lines: {
+        wallTop: function () { return 150; },
+        ground: function (x) { return 262 + 4 * Math.sin(x * 0.02); }
+      },
+      outlines: [{ line: "wallTop", color: OUTLINE }, { line: "ground", color: OUTLINE }],
+      regions: {
+        sky: { bottom: "wallTop" },
+        lawn: { top: "ground", margin: 10 }
+      },
+      zones: {
+        wall: { top: "wallTop", bottom: "ground", near: [6, 6], guide: "band", brush: 11 },
+        lawn: { top: "ground", bottom: 360, near: [12, 10], guide: "band", brush: 11 }
+      },
+      scribble: [[296, 46], [318, 98], [336, 40], [352, 104], [372, 44], [388, 110], [410, 52], [426, 102], [446, 58]]
+    }
+  };
+})();
+
+</script>
+<script>
+/* Painter — draws a scene's card and produces each Tux Paint-style effect for real.
+   Logical canvas: 540 x 360, rendered at 2x. Every effect has an instant mode
+   so the game can paint a preview of the finished picture. */
+window.WSW = window.WSW || {};
+WSW.IMAGES = WSW.IMAGES || {};
+(function () {
+  var W = 540, H = 360, S = 2, COLW = 20, COLS = Math.ceil(W / COLW);
+
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function hexToRgb(h) { h = h.replace("#", ""); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+  function mixRgb(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  function scale(c, k) { return [Math.min(255, c[0] * k), Math.min(255, c[1] * k), Math.min(255, c[2] * k)]; }
+  function rgbStr(c, al) { return "rgba(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + "," + (al == null ? 1 : al) + ")"; }
+  function hash(a, b) { var s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); }
+
+  WSW.loadImages = function (map) {
+    return Promise.all(Object.keys(map).map(function (k) {
+      return new Promise(function (res) {
+        if (WSW.IMAGES[k]) return res();
+        var img = new Image();
+        img.onload = function () { WSW.IMAGES[k] = img; res(); };
+        img.onerror = function () { res(); };
+        img.src = map[k];
+      });
+    }));
+  };
+
+  function Painter(art, guide) {
+    this.art = art; this.guide = guide || null;
+    art.width = W * S; art.height = H * S;
+    this.ctx = art.getContext("2d");
+    this.ctx.setTransform(S, 0, 0, S, 0, 0);
+    if (guide) {
+      guide.width = W * S; guide.height = H * S;
+      this.gctx = guide.getContext("2d");
+      this.gctx.setTransform(S, 0, 0, S, 0, 0);
+    }
+  }
+  Painter.W = W; Painter.H = H; Painter.COLS = COLS; Painter.COLW = COLW;
+
+  /* ---------- geometry helpers ---------- */
+  Painter.prototype.fn = function (spec, fallback) {
+    var g = this.g;
+    if (spec == null) return function () { return fallback; };
+    if (typeof spec === "number") return function () { return spec; };
+    if (typeof spec === "string") return g.lines[spec];
+    var f = g.lines[spec.line], dy = spec.dy || 0;
+    return function (x) { return f(x) + dy; };
+  };
+  Painter.prototype.area = function (spec) {
+    return { top: this.fn(spec.top, 0), bottom: this.fn(spec.bottom, H), margin: spec.margin || 0 };
+  };
+  Painter.prototype.region = function (name) { return this.area(this.g.regions[name]); };
+  Painter.prototype.zone = function (name) {
+    var z = this.g.zones[name], a = this.area(z);
+    a.spec = z; a.line = z.line ? this.fn(z.line) : null;
+    return a;
+  };
+  function tracePath(c, a, inset) {
+    inset = inset || 0;
+    c.beginPath();
+    c.moveTo(0, a.top(0) + inset);
+    for (var x = 0; x <= W; x += 4) c.lineTo(x, a.top(x) + inset);
+    for (x = W; x >= 0; x -= 4) c.lineTo(x, a.bottom(x) - inset);
+    c.closePath();
+  }
+  Painter.prototype.inRegion = function (name, x, y) {
+    var a = this.region(name), m = a.margin;
+    return x > 4 && x < W - 4 && y > a.top(x) + m && y < a.bottom(x) - m;
+  };
+  Painter.prototype.nearZone = function (name, x, y) {
+    var z = this.zone(name), n = z.spec.near || [0, 0];
+    return x >= 0 && x <= W && y > z.top(x) - n[0] && y < z.bottom(x) + n[1];
+  };
+
+  /* ---------- scene setup ---------- */
+  Painter.prototype.setScene = function (id) { this.g = WSW.Scenes[id]; this._samples = null; this.reset(); };
+
+  Painter.prototype.reset = function () {
+    var c = this.ctx;
+    c.fillStyle = "#ffffff"; c.fillRect(0, 0, W, H);
+    this.drawOutlines();
+    this.cols = {};
+    this.sparkles = [];
+    this.erased = {}; this.erasedCount = 0;
+    if (this.g.scribble) this.drawScribble("#D9433B", 4);
+    this.clearGuide();
+  };
+
+  Painter.prototype.drawOutlines = function () {
+    var c = this.ctx, self = this;
+    (this.g.outlines || []).forEach(function (o) {
+      var f = self.fn(o.line);
+      c.save(); c.strokeStyle = o.color; c.lineWidth = 2; c.lineJoin = "round";
+      c.beginPath();
+      for (var x = 0; x <= W; x += 4) { if (x === 0) c.moveTo(x, f(x)); else c.lineTo(x, f(x)); }
+      c.stroke(); c.restore();
+    });
+  };
+
+  Painter.prototype.drawScribble = function (color, width) {
+    var c = this.ctx, p = this.g.scribble;
+    c.save(); c.strokeStyle = color; c.lineWidth = width; c.lineCap = "round"; c.lineJoin = "round";
+    c.beginPath(); c.moveTo(p[0][0], p[0][1]);
+    for (var i = 1; i < p.length; i++) c.lineTo(p[i][0], p[i][1]);
+    c.stroke(); c.restore();
+  };
+
+  /* ---------- Fill: solid, linear, radial ---------- */
+  Painter.prototype.fill = function (regionName, mode, hex, done, instant) {
+    var c = this.ctx, self = this, a = this.region(regionName);
+    var y0 = H, y1 = 0;
+    for (var x = 0; x <= W; x += 10) { y0 = Math.min(y0, a.top(x)); y1 = Math.max(y1, a.bottom(x)); }
+    var col = hexToRgb(hex), light = mixRgb(col, [255, 255, 255], 0.8);
+    function paint(e) {
+      c.save(); tracePath(c, a); c.clip();
+      if (mode === "radial") {
+        var cx = W / 2, cy = y0 + 70, R = 330;
+        var g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
+        g.addColorStop(0, rgbStr(light)); g.addColorStop(1, rgbStr(col));
+        c.fillStyle = g;
+        c.beginPath(); c.arc(cx, cy, 460 * e, 0, Math.PI * 2); c.fill();
+      } else {
+        if (mode === "linear") {
+          var lg = c.createLinearGradient(0, y0, 0, y1);
+          lg.addColorStop(0, rgbStr(col)); lg.addColorStop(1, rgbStr(light));
+          c.fillStyle = lg;
+        } else c.fillStyle = rgbStr(col);
+        c.fillRect(0, y0, W, (y1 - y0 + 2) * e);
+      }
+      c.restore();
+      self.drawOutlines();
+    }
+    if (instant) { paint(1); if (done) done(); return; }
+    var start = performance.now(), dur = 900;
+    (function frame(now) {
+      var t = Math.min(1, ((now || performance.now()) - start) / dur);
+      paint(1 - Math.pow(1 - t, 3));
+      if (t < 1) requestAnimationFrame(frame); else if (done) done();
+    })(start);
+  };
+
+  /* ---------- Column effects (drag across a zone) ---------- */
+  Painter.prototype.colCount = function (effect, zoneName) {
+    var s = this.cols[effect + ":" + zoneName]; return s ? s.n : 0;
+  };
+  Painter.prototype.colDone = function (effect, zoneName, i) {
+    var s = this.cols[effect + ":" + zoneName]; return !!(s && s[i]);
+  };
+  Painter.prototype.column = function (effect, zoneName, i, hex) {
+    var key = effect + ":" + zoneName, set = this.cols[key] || (this.cols[key] = { n: 0 });
+    if (i < 0 || i >= COLS || set[i]) return false;
+    set[i] = true; set.n++;
+    this["fx_" + effect](this.zone(zoneName), i, hex);
+    return true;
+  };
+  Painter.prototype.finishColumns = function (effect, zoneName, hex, done, instant) {
+    var self = this, todo = [];
+    for (var i = 0; i < COLS; i++) if (!this.colDone(effect, zoneName, i)) todo.push(i);
+    if (instant) { todo.forEach(function (i) { self.column(effect, zoneName, i, hex); }); if (done) done(); return; }
+    (function next() {
+      if (!todo.length) { if (done) done(); return; }
+      self.column(effect, zoneName, todo.shift(), hex);
+      setTimeout(next, 30);
+    })();
+  };
+
+  function blob(c, x, y, r, col) {
+    c.fillStyle = rgbStr(col, 0.92);
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(x + rnd(-r, r) * 0.6, y + rnd(-r, r) * 0.6, r * rnd(0.45, 0.7), 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(x + rnd(-r, r) * 0.7, y + rnd(-r, r) * 0.7, r * rnd(0.3, 0.5), 0, Math.PI * 2); c.fill();
+  }
+
+  Painter.prototype.fx_blotchy = function (z, i, hex) {
+    var c = this.ctx, base = hexToRgb(hex);
+    c.save();
+    if (z.spec.clip) { tracePath(c, this.region(z.spec.clip)); c.clip(); }
+    for (var x = i * COLW - 3; x <= i * COLW + COLW + 3; x += 5) {
+      var top = z.top(x), bot = z.bottom(x);
+      for (var y = top + 2; y <= bot; y += 6) {
+        var f = (y - top) / Math.max(1, bot - top);
+        blob(c, x + rnd(-3, 3), y + rnd(-3, 3), rnd(5, 8), scale(mixRgb(base, [255, 255, 255], 0.14 * f), rnd(0.88, 1.08)));
+      }
+      for (var k = 0; k < 2; k++) blob(c, x + rnd(-4, 4), top + rnd(-2, 4), rnd(3.5, 7), scale(base, rnd(0.82, 1)));
+    }
+    c.restore();
+    this.drawOutlines();
+  };
+
+  Painter.prototype.fx_spray = function (z, i, hex) {
+    var c = this.ctx, base = hexToRgb(hex);
+    c.save(); tracePath(c, { top: function (x) { return z.top(x) - 4; }, bottom: z.bottom }); c.clip();
+    for (var k = 0; k < 170; k++) {
+      var x = i * COLW + rnd(-2, COLW + 2), y = rnd(z.top(x) - 3, z.bottom(x));
+      c.fillStyle = rgbStr(scale(base, rnd(0.72, 1.08)), rnd(0.7, 1));
+      c.beginPath(); c.arc(x, y, rnd(0.7, 1.9), 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+  };
+
+  Painter.prototype.fx_bricks = function (z, i, hex) {
+    var c = this.ctx, base = hexToRgb(hex), BW = 30, BH = 14, x0 = i * COLW, x1 = x0 + COLW;
+    c.save(); tracePath(c, z); c.clip();
+    c.beginPath(); c.rect(x0, 0, COLW, H); c.clip();
+    c.fillStyle = "#E7DED4"; c.fillRect(x0, 0, COLW, H);
+    var top = z.top(0);
+    for (var r = 0; top + r * BH < H; r++) {
+      var off = (r % 2) * (BW / 2), y = top + r * BH;
+      for (var k = -1; k * BW - off < W; k++) {
+        var bx = k * BW - off;
+        if (bx + BW < x0 || bx > x1) continue;
+        c.fillStyle = rgbStr(scale(base, 0.82 + hash(r, k) * 0.3));
+        c.fillRect(bx + 1.5, y + 1.5, BW - 3, BH - 3);
+      }
+    }
+    c.restore();
+    this.drawOutlines();
+  };
+
+  Painter.prototype.fx_grass = function (z, i, hex) {
+    var c = this.ctx, base = hexToRgb(hex), x0 = i * COLW;
+    c.save(); tracePath(c, z); c.clip();
+    c.fillStyle = rgbStr(mixRgb(base, [255, 255, 255], 0.2)); c.fillRect(x0, 0, COLW, H);
+    c.restore();
+    c.save(); c.lineCap = "round"; c.lineWidth = 1.6;
+    for (var x = x0 + 1; x < x0 + COLW; x += 3) {
+      for (var y = z.top(x) + 3; y < H + 6; y += 9) {
+        var bx = x + rnd(-1.5, 1.5);
+        c.strokeStyle = rgbStr(scale(base, rnd(0.7, 1.12)));
+        c.beginPath(); c.moveTo(bx, y + 6);
+        c.quadraticCurveTo(bx + rnd(-2, 2), y - 2, bx + rnd(-4, 4), y - rnd(5, 12));
+        c.stroke();
+      }
+    }
+    c.restore();
+  };
+
+  /* Real pixel smudging: a carried patch of paint is dragged along each stroke */
+  function smudgeStroke(img, pts, R, strength, pickup) {
+    var w = img.width, h = img.height, d = img.data, size = 2 * R + 1;
+    var patch = new Float32Array(size * size * 4), p0 = pts[0], dx, dy, sx, sy, si, pi, ch;
+    for (dy = -R; dy <= R; dy++) for (dx = -R; dx <= R; dx++) {
+      sx = Math.min(w - 1, Math.max(0, Math.round(p0[0]) + dx));
+      sy = Math.min(h - 1, Math.max(0, Math.round(p0[1]) + dy));
+      si = (sy * w + sx) * 4; pi = ((dy + R) * size + (dx + R)) * 4;
+      for (ch = 0; ch < 3; ch++) patch[pi + ch] = d[si + ch];
+    }
+    for (var k = 1; k < pts.length; k++) {
+      var a = pts[k - 1], b = pts[k], steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3));
+      for (var s = 1; s <= steps; s++) {
+        var cx = Math.round(a[0] + (b[0] - a[0]) * s / steps), cy = Math.round(a[1] + (b[1] - a[1]) * s / steps);
+        for (dy = -R; dy <= R; dy++) for (dx = -R; dx <= R; dx++) {
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > R) continue;
+          sx = cx + dx; sy = cy + dy;
+          if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue;
+          var f = 1 - dist / R, al = strength * f, bl = pickup * f;
+          si = (sy * w + sx) * 4; pi = ((dy + R) * size + (dx + R)) * 4;
+          for (ch = 0; ch < 3; ch++) {
+            var pv = d[si + ch], cv = patch[pi + ch];
+            d[si + ch] = pv + (cv - pv) * al;
+            patch[pi + ch] = cv + (pv - cv) * bl;
+          }
+        }
+      }
+    }
+  }
+  Painter.prototype.fx_smudge = function (z, i) {
+    var L = z.line, cx = i * COLW + COLW / 2, strokes = [];
+    [-7, 1, 9].forEach(function (o) {
+      var x = cx + o + rnd(-2, 2), g = L(x);
+      strokes.push([[x, g + 16], [x + rnd(-2, 2), g - 8], [x + rnd(-3, 3), g - 34]]);
+    });
+    strokes.push([[cx - 14, L(cx - 14) - 2], [cx + 14, L(cx + 14) - 2]]);
+    var R = 13, bx = Math.max(0, Math.floor((cx - 30 - R) * S)), by = Math.max(0, Math.floor((L(cx) - 60) * S));
+    var bw = Math.min(W * S, Math.ceil((cx + 30 + R) * S)) - bx, bh = Math.min(H * S, Math.ceil((L(cx) + 40) * S)) - by;
+    var img = this.ctx.getImageData(bx, by, bw, bh);
+    strokes.forEach(function (st) {
+      smudgeStroke(img, st.map(function (p) { return [p[0] * S - bx, p[1] * S - by]; }), R * S, 0.5, 0.06);
+    });
+    this.ctx.putImageData(img, bx, by);
+  };
+
+  /* ---------- Placed things ---------- */
+  Painter.prototype.stamp = function (key, x, y, w, h, rot, flip) {
+    var img = WSW.IMAGES[key]; if (!img) return;
+    var c = this.ctx;
+    c.save(); c.translate(x, y); c.rotate(rot || 0); if (flip) c.scale(-1, 1);
+    c.drawImage(img, -w / 2, -h / 2, w, h);
+    c.restore();
+  };
+
+  Painter.prototype.sparkle = function (x, y, hex, s) {
+    var c = this.ctx;
+    c.save(); c.fillStyle = hex; c.beginPath();
+    for (var k = 0; k < 8; k++) {
+      var ang = k * Math.PI / 4 - Math.PI / 2, r = k % 2 ? s * 0.3 : s;
+      c.lineTo(x + Math.cos(ang) * r, y + Math.sin(ang) * r);
+    }
+    c.closePath(); c.fill();
+    c.fillStyle = "rgba(255,255,255,.85)"; c.beginPath(); c.arc(x, y, s * 0.18, 0, Math.PI * 2); c.fill();
+    c.restore();
+    this.sparkles.push([x, y]);
+  };
+
+  Painter.prototype.shape = function (kind, x, y, r, hex) {
+    var c = this.ctx, col = hexToRgb(hex);
+    c.save();
+    if (kind === "filled") {
+      c.fillStyle = hex; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+      c.fillStyle = rgbStr(scale(col, 0.88));
+      [[-0.35, -0.2, 0.22], [0.3, 0.25, 0.16], [0.05, 0.45, 0.1]].forEach(function (k) {
+        c.beginPath(); c.arc(x + k[0] * r, y + k[1] * r, k[2] * r, 0, Math.PI * 2); c.fill();
+      });
+    } else {
+      c.strokeStyle = hex; c.lineWidth = 3;
+      c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke();
+      c.lineWidth = 2; c.globalAlpha = 0.8;
+      c.beginPath(); c.arc(x, y, r * 0.6, Math.PI * 1.1, Math.PI * 1.45); c.stroke();
+    }
+    c.restore();
+  };
+
+  Painter.prototype.text = function (str, x, y, hex) {
+    var c = this.ctx;
+    c.save();
+    c.font = "800 30px Grandstander, 'Comic Sans MS', sans-serif";
+    var w = c.measureText(str).width;
+    x = Math.max(w / 2 + 10, Math.min(W - w / 2 - 10, x));
+    c.fillStyle = hex; c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillText(str, x, y);
+    c.restore();
+  };
+
+  /* ---------- Eraser ---------- */
+  Painter.prototype.eraseAt = function (x, y) {
+    var c = this.ctx, p = this.g.scribble, hit = 0;
+    c.save(); c.fillStyle = "#ffffff"; c.beginPath(); c.arc(x, y, 14, 0, Math.PI * 2); c.fill(); c.restore();
+    var samples = this.scribbleSamples();
+    for (var i = 0; i < samples.length; i++) {
+      if (!this.erased[i] && Math.hypot(samples[i][0] - x, samples[i][1] - y) < 16) { this.erased[i] = true; this.erasedCount++; hit++; }
+    }
+    return hit;
+  };
+  Painter.prototype.scribbleSamples = function () {
+    if (this._samples) return this._samples;
+    var p = this.g.scribble, out = [];
+    for (var i = 0; i < p.length - 1; i++) for (var t = 0; t < 1; t += 0.2)
+      out.push([p[i][0] + (p[i + 1][0] - p[i][0]) * t, p[i][1] + (p[i + 1][1] - p[i][1]) * t]);
+    return (this._samples = out);
+  };
+  Painter.prototype.eraseRest = function () { this.drawScribble("#ffffff", 16); };
+
+  /* ---------- Guide layer (never part of the artwork) ---------- */
+  Painter.prototype.clearGuide = function () { if (this.gctx) this.gctx.clearRect(0, 0, W, H); };
+
+  Painter.prototype.drawGuide = function (target, pointer) {
+    var g = this.gctx; if (!g) return;
+    g.clearRect(0, 0, W, H);
+    var berry = "#C8384F", x, a;
+    g.save(); g.lineCap = "round"; g.lineJoin = "round";
+    if (target.region) {
+      a = this.region(target.region);
+      tracePath(g, a, 3); g.save(); g.clip();
+      g.fillStyle = "rgba(200,56,79,0.07)"; g.fillRect(0, 0, W, H);
+      g.setLineDash([8, 7]); g.strokeStyle = berry; g.lineWidth = 6; g.stroke();
+      g.restore();
+    } else if (target.zone) {
+      a = this.zone(target.zone);
+      if (a.spec.guide === "topline") {
+        g.setLineDash([2, 8]); g.strokeStyle = berry; g.lineWidth = 3.5; g.beginPath();
+        for (x = 0; x <= W; x += 3) {
+          if (this.colDone("blotchy", target.zone, Math.floor(x / COLW))) { g.moveTo(x + 3, a.top(x + 3)); continue; }
+          g.lineTo(x, a.top(x));
+        }
+        g.stroke();
+      } else {
+        tracePath(g, a);
+        g.fillStyle = "rgba(244,198,78,0.30)"; g.fill();
+        g.setLineDash([6, 6]); g.strokeStyle = berry; g.lineWidth = 2; g.stroke();
+      }
+    } else if (target.scribble) {
+      var p = this.g.scribble, minX = 1e9, maxX = 0, minY = 1e9, maxY = 0;
+      p.forEach(function (q) { minX = Math.min(minX, q[0]); maxX = Math.max(maxX, q[0]); minY = Math.min(minY, q[1]); maxY = Math.max(maxY, q[1]); });
+      g.setLineDash([8, 7]); g.strokeStyle = berry; g.lineWidth = 2.5;
+      g.beginPath(); g.ellipse((minX + maxX) / 2, (minY + maxY) / 2, (maxX - minX) / 2 + 26, (maxY - minY) / 2 + 24, 0, 0, Math.PI * 2); g.stroke();
+    }
+    g.restore();
+    if (pointer) {
+      var r = target.brush || 6;
+      g.save();
+      g.strokeStyle = "#1E2A4A"; g.lineWidth = 1.5;
+      g.beginPath(); g.arc(pointer.x, pointer.y, r, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = "#ffffff"; g.lineWidth = 1;
+      g.beginPath(); g.arc(pointer.x, pointer.y, r + 1.5, 0, Math.PI * 2); g.stroke();
+      g.restore();
+    }
+  };
+
+  Painter.prototype.copyTo = function (target) {
+    target.width = W * S; target.height = H * S;
+    target.getContext("2d").drawImage(this.art, 0, 0);
+  };
+
+  WSW.Painter = Painter;
+})();
+
+</script>
+<script>
+/* Art Studio — game flow.
+   Title → Pick a picture → Instructions (what you'll make) → Paint, step by step → Finished card.
+   Each step: pick the TOOL → pick its TYPE (if any) → pick the COLOR (if needed) → USE it on the card. */
+(function () {
+  var D = window.WSW_DATA, P = WSW.Painter, A = WSW.Audio;
+  function $(s) { return document.querySelector(s); }
+  function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  var painter, scene, state = {}, previews = {}, progress = loadProgress();
+
+  /* ---------- lookups ---------- */
+  function step() { return scene.steps[state.step]; }
+  function toolById(id) { return D.tools.filter(function (t) { return t.id === id; })[0]; }
+  function optionsFor(id) { return D.options[id] || null; }
+  function optionById(toolId, id) { var o = optionsFor(toolId); return o ? o.items.filter(function (i) { return i.id === id; })[0] : null; }
+  function colorById(id) { return D.colors.filter(function (c) { return c.id === id; })[0]; }
+  function sceneById(id) { return D.scenes.filter(function (s) { return s.id === id; })[0]; }
+  function stepHex(s) { return s.color ? colorById(s.color).hex : (state.color ? colorById(state.color).hex : "#2B4C9B"); }
+
+  /* ---------- progress (kept in this browser only) ---------- */
+  function loadProgress() { try { return JSON.parse(localStorage.getItem("artstudio-progress") || "{}") || {}; } catch (e) { return {}; } }
+  function saveProgress() { try { localStorage.setItem("artstudio-progress", JSON.stringify(progress)); } catch (e) {} }
+
+  /* ---------- layout ---------- */
+  function fit() {
+    var s = Math.min(window.innerWidth / 1130, window.innerHeight / 502);
+    $("#stage").style.transform = "scale(" + s + ")";
+  }
+  function show(name) { $$(".screen").forEach(function (el) { el.classList.toggle("is-active", el.id === "screen-" + name); }); }
+
+  /* ---------- Placing things (shared by play, keyboard and previews) ---------- */
+  function placeStamp(p, a, x, y) {
+    if (a.anchor === "bottom") {
+      var bottom = Math.min(y + 10, P.H - 4), cx = Math.max(a.w / 2 + 4, Math.min(P.W - a.w / 2 - 4, x));
+      p.stamp(a.stamp, cx, bottom - a.h / 2, a.w, a.h, 0, false);
+    } else {
+      var w = a.size ? rnd(a.size[0], a.size[1]) : a.w, h = a.size ? w : a.h;
+      p.stamp(a.stamp, x, y, w, h, a.rotate ? rnd(0, Math.PI) : 0, a.flip ? Math.random() < 0.5 : false);
+    }
+  }
+  function placeShape(p, a, x, y, hex) {
+    var r = rnd(a.r[0], a.r[1]);
+    x = Math.max(r + 4, Math.min(P.W - r - 4, x));
+    p.shape(a.shape, x, Math.max(r + 4, y), r, hex);
+  }
+
+  /* Paint a finished copy of a scene instantly (menu thumbnails + "what you'll make") */
+  function paintFinished(p, sc) {
+    p.setScene(sc.id);
+    sc.steps.forEach(function (s) {
+      var a = s.action, hex = s.color ? colorById(s.color).hex : "#2B4C9B";
+      if (a.do === "fill") p.fill(a.region, a.mode, hex, null, true);
+      else if (a.do === "columns") p.finishColumns(a.effect, a.zone, hex, null, true);
+      else if (a.do === "stamp") a.auto.forEach(function (q) { placeStamp(p, a, q[0], q[1]); });
+      else if (a.do === "shape") a.auto.forEach(function (q) { placeShape(p, a, q[0], q[1], hex); });
+      else if (a.do === "sparkle") a.auto.forEach(function (q) { p.sparkle(q[0], q[1], hex, 8); });
+      else if (a.do === "text") p.text(a.text, a.auto[0][0], a.auto[0][1], hex);
+      else if (a.do === "erase") p.eraseRest();
+    });
+  }
+  function buildPreviews() {
+    var c = document.createElement("canvas"), p = new P(c, null);
+    D.scenes.forEach(function (sc) {
+      paintFinished(p, sc);
+      var copy = document.createElement("canvas");
+      p.copyTo(copy);
+      previews[sc.id] = copy;
+    });
+  }
+  function drawPreview(target, id) {
+    var src = previews[id]; if (!src) return;
+    target.width = src.width; target.height = src.height;
+    target.getContext("2d").drawImage(src, 0, 0);
+  }
+
+  /* ---------- MENU ---------- */
+  function renderMenu() {
+    var grid = $("#scene-grid"); grid.innerHTML = "";
+    D.scenes.forEach(function (sc) {
+      var best = progress[sc.id] || 0;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "scene-card" + (best ? " is-done" : "");
+      b.innerHTML =
+        '<canvas class="scene-thumb" aria-hidden="true"></canvas>' +
+        '<span class="scene-name">' + sc.name + "</span>" +
+        '<span class="scene-line">' + sc.thumbLine + "</span>" +
+        '<span class="scene-meta"><span>' + sc.steps.length + " steps</span>" +
+        (best ? '<span class="mini-stars" aria-label="' + best + ' of 3 stars">' + "★★★".slice(0, best) + '<i>' + "★★★".slice(best) + "</i></span>" : '<span class="new-tag">New</span>') +
+        "</span>";
+      b.addEventListener("click", function () { A.play("click"); openBrief(sc.id); });
+      grid.appendChild(b);
+      drawPreview(b.querySelector("canvas"), sc.id);
+    });
+    show("menu");
+  }
+
+  /* ---------- BRIEF: what you'll make ---------- */
+  function openBrief(id) {
+    scene = sceneById(id);
+    drawPreview($("#brief-preview"), id);
+    $("#brief-name").textContent = scene.name;
+    $("#brief-goal").textContent = scene.goal;
+    $("#brief-hazel").textContent = scene.brief;
+    var ol = $("#brief-steps"); ol.innerHTML = "";
+    scene.steps.forEach(function (s) { var li = document.createElement("li"); li.textContent = s.instruction; ol.appendChild(li); });
+    show("brief");
+    $("#btn-go").focus();
+  }
+
+  /* ---------- GAME: build UI ---------- */
+  function buildToolbar() {
+    var tb = $("#toolbar");
+    D.tools.forEach(function (t) {
+      var b = document.createElement("button");
+      b.className = "tool"; b.type = "button"; b.dataset.tool = t.id;
+      b.setAttribute("aria-label", t.label + ". " + t.desc);
+      b.innerHTML = '<img src="' + t.icon + '" alt=""><span class="tool-name">' + t.label + '</span><span class="mark" aria-hidden="true"></span>' +
+        '<span class="tip" role="tooltip"><b>' + t.label + "</b>" + t.desc.replace(t.label + " ", "") + "</span>";
+      b.addEventListener("click", function () { onTool(t.id); });
+      tb.appendChild(b);
+    });
+  }
+  function buildPalette() {
+    var p = $("#palette");
+    D.colors.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "swatch"; b.type = "button"; b.dataset.color = c.id;
+      b.style.setProperty("--swatch", c.hex);
+      b.setAttribute("aria-label", c.name); b.title = c.name;
+      b.innerHTML = '<span class="mark" aria-hidden="true"></span>';
+      b.addEventListener("click", function () { onColor(c.id); });
+      p.appendChild(b);
+    });
+  }
+  function buildSteps() {
+    var ol = $("#steps"); ol.innerHTML = "";
+    scene.steps.forEach(function (s, i) {
+      var li = document.createElement("li");
+      li.dataset.index = i;
+      li.innerHTML = '<span class="num" aria-hidden="true">' + (i + 1) + '</span><span class="what">' + s.instruction + "</span>";
+      ol.appendChild(li);
+    });
+    $("#scene-chip").textContent = scene.name;
+  }
+
+  /* ---------- Hazel ---------- */
+  function say(text, mood) {
+    var b = $("#bubble");
+    b.textContent = text;
+    $("#coach").className = "coach" + (mood ? " is-" + mood : "");
+    var bub = $("#coach-bubble"); bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop");
+    $("#hazel").src = mood === "good" ? D.customer.art.happy : mood === "oops" ? D.customer.art.think : D.customer.art.normal;
+  }
+
+  /* ---------- Tracker: Tool → Type → Color → Use it ---------- */
+  function readiness() {
+    var s = step();
+    return {
+      tool: state.tool === s.tool,
+      option: !s.option || state.option === s.option,
+      color: !s.color || state.color === s.color
+    };
+  }
+  function nextSlot() {
+    var r = readiness(), s = step();
+    if (!r.tool) return "tool";
+    if (s.option && !r.option) return "option";
+    if (s.color && !r.color) return "color";
+    return "use";
+  }
+  function renderTracker() {
+    var s = step(), r = readiness(), cur = nextSlot(), slots = [];
+    slots.push({ key: "tool", label: "Tool", value: r.tool ? toolById(s.tool).label : "" });
+    if (s.option) slots.push({ key: "option", label: optionsFor(s.tool).noun, value: r.option && r.tool ? optionById(s.tool, s.option).label : "" });
+    if (s.color) slots.push({ key: "color", label: "Color", value: r.color ? colorById(s.color).name : "" });
+    if (s.action.do !== "save") slots.push({ key: "use", label: "Use it", value: "" });
+    var html = slots.map(function (sl) {
+      var done = sl.key !== "use" && !!sl.value && (sl.key !== "option" || r.tool);
+      var cls = done ? "is-done" : sl.key === cur ? "is-current" : "";
+      return '<li class="slot ' + cls + '"><span class="slot-label">' + sl.label + "</span>" +
+        (done ? '<span class="slot-value">' + sl.value + "</span>" : sl.key === cur && sl.key !== "use" ? '<span class="slot-value">?</span>' : "") + "</li>";
+    }).join("");
+    $("#tracker").innerHTML = html;
+    // point the eye at the next place to click
+    $("#drawer").classList.toggle("is-next", cur === "option");
+    $("#palette").classList.toggle("is-next", cur === "color");
+  }
+
+  /* ---------- Drawer of choices beside the toolbar ---------- */
+  function renderDrawer() {
+    var s = step(), body = $("#drawer-body"), title = $("#drawer-title"), t = toolById(state.tool), o = optionsFor(state.tool);
+    body.innerHTML = ""; body.className = "drawer-body";
+    $("#drawer").classList.toggle("is-open", !!(t && state.tool === s.tool && o));
+    if (!t) { title.textContent = "Choices"; body.innerHTML = '<p class="drawer-note">' + D.text.drawerEmpty + "</p>"; return; }
+    if (state.tool !== s.tool) { title.textContent = "Choices"; body.innerHTML = '<p class="drawer-note is-wrong">' + D.text.drawerWrongTool + "</p>"; return; }
+    if (!o) { title.textContent = t.label; body.innerHTML = '<p class="drawer-note">' + t.label + " " + D.text.drawerNoOptions + "</p>"; return; }
+    title.textContent = o.title;
+    if (state.tool === "stamp") body.classList.add("is-stamps");
+    o.items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.className = "option"; b.type = "button"; b.dataset.option = it.id;
+      b.innerHTML = '<img src="' + it.img + '" alt=""><span>' + it.label + '</span><span class="mark" aria-hidden="true"></span>';
+      b.addEventListener("click", function () { onOption(it.id); });
+      body.appendChild(b);
+    });
+  }
+
+  /* ---------- Right / wrong marks on the buttons themselves ---------- */
+  function mark(selector, attr, value, ok) {
+    $$(selector).forEach(function (el) {
+      var me = el.dataset[attr] === value;
+      el.classList.toggle("is-on", me);
+      el.classList.toggle("is-right", me && ok === true);
+      el.classList.toggle("is-wrong", me && ok === false);
+      el.setAttribute("aria-pressed", me);
+    });
+  }
+  function clearMarks(selector) { $$(selector).forEach(function (el) { el.classList.remove("is-on", "is-right", "is-wrong"); el.setAttribute("aria-pressed", "false"); }); }
+  function clearHints() { $$(".is-hint").forEach(function (el) { el.classList.remove("is-hint"); }); }
+  function hint(selector) { var el = $(selector); if (el) el.classList.add("is-hint"); }
+
+  function updateSteps() {
+    $("#step-count").textContent = "Step " + Math.min(state.step + 1, scene.steps.length) + " of " + scene.steps.length;
+    $$("#steps li").forEach(function (li) {
+      var i = +li.dataset.index;
+      li.classList.toggle("is-done", i < state.step);
+      li.classList.toggle("is-current", i === state.step);
+      li.querySelector(".num").textContent = i < state.step ? "✓" : i + 1;
+    });
+  }
+  function miss(key) { var k = state.step + ":" + key; if (!state.missed[k]) { state.missed[k] = true; state.mistakes++; } }
+
+  /* ---------- Step flow ---------- */
+  function startScene() {
+    state = { step: 0, tool: null, option: null, color: null, armed: false, busy: false, mistakes: 0, missed: {}, toolMiss: 0, optMiss: 0, count: 0, down: false, pointer: null, last: null };
+    painter.setScene(scene.id);
+    buildSteps();
+    clearMarks(".swatch");
+    $("#saved-chip").classList.remove("go");
+    show("game");
+    startStep();
+  }
+
+  function startStep() {
+    var s = step();
+    state.tool = null; state.option = null; state.toolMiss = 0; state.optMiss = 0; state.count = 0; state.last = null;
+    if (s.color) { state.color = null; clearMarks(".swatch"); }
+    disarm(); clearHints(); clearMarks(".tool");
+    renderDrawer(); updateSteps(); renderTracker();
+    say(s.intro, "neutral");
+    state.busy = false;
+  }
+
+  function refresh() {
+    var cur = nextSlot();
+    if (cur === "use" && step().action.do !== "save") arm(); else disarm();
+    renderTracker();
+    return cur;
+  }
+  function guideTarget() {
+    var a = step().action;
+    if (a.do === "columns") return { zone: a.zone, brush: painter.g.zones[a.zone].brush };
+    if (a.do === "erase") return { scribble: true, brush: 14 };
+    return { region: a.region, brush: a.do === "sparkle" ? 8 : 6 };
+  }
+  function arm() { state.armed = true; $("#easel").classList.add("is-armed"); painter.drawGuide(guideTarget(), state.pointer); }
+  function disarm() { state.armed = false; $("#easel").classList.remove("is-armed"); if (painter) painter.clearGuide(); }
+
+  function promptFor(cur) {
+    var s = step();
+    if (cur === "option") return "";
+    if (cur === "color") return s.colorPrompt || "";
+    if (cur === "use") return s.doPrompt || "";
+    return "";
+  }
+
+  function onTool(id) {
+    if (state.busy) return;
+    A.play("click");
+    var s = step(), t = toolById(id);
+    state.tool = id; state.option = null;
+    clearHints();
+    if (id === s.tool) {
+      mark(".tool", "tool", id, true);
+      renderDrawer();
+      if (s.action.do === "save") { doSave(); return; }
+      var cur = refresh();
+      A.play("good");
+      say(s.toolRight + (cur !== "option" ? " " + promptFor(cur) : ""), "good");
+    } else {
+      mark(".tool", "tool", id, false);
+      renderDrawer(); disarm(); renderTracker();
+      var note = s.toolNotes && s.toolNotes[id];
+      if (!note) { miss("tool:" + id); state.toolMiss++; }
+      A.play("oops");
+      say(note || (t.desc + " " + s.nudge), "oops");
+      if (state.toolMiss >= 2) hint('.tool[data-tool="' + s.tool + '"]');
+    }
+  }
+
+  function onOption(id) {
+    if (state.busy) return;
+    A.play("click");
+    var s = step(), o = optionById(state.tool, id);
+    state.option = id;
+    clearHints();
+    if (id === s.option) {
+      mark(".option", "option", id, true);
+      var cur = refresh();
+      A.play("good");
+      say(s.optionRight + " " + promptFor(cur), "good");
+    } else {
+      mark(".option", "option", id, false);
+      disarm(); renderTracker();
+      miss("opt:" + id); state.optMiss++;
+      A.play("oops");
+      say(o.desc + " " + s.optionNudge, "oops");
+      if (state.optMiss >= 2) hint('.option[data-option="' + s.option + '"]');
+    }
+  }
+
+  function onColor(id) {
+    if (state.busy) return;
+    A.play("click");
+    var s = step(), c = colorById(id);
+    state.color = id;
+    $$(".swatch.is-hint").forEach(function (el) { el.classList.remove("is-hint"); });
+    if (!s.color) {
+      mark(".swatch", "color", id, null);
+      var cur0 = refresh();
+      say("You picked " + c.name + ". " + D.text.colorNotNeeded + (cur0 === "use" ? " " + s.doPrompt : ""), "neutral");
+      return;
+    }
+    if (id === s.color) {
+      mark(".swatch", "color", id, true);
+      var cur = refresh();
+      A.play("good");
+      var next = cur === "use" ? s.doPrompt : cur === "tool" ? "Now find the right tool." : "Now pick the right " + optionsFor(s.tool).noun.toLowerCase() + ".";
+      say("Good, " + c.name + "! " + next, "good");
+    } else {
+      mark(".swatch", "color", id, false);
+      disarm(); renderTracker();
+      miss("col:" + id);
+      A.play("oops");
+      say("That's " + c.name + ". This step needs " + colorById(s.color).name + ".", "oops");
+      if (state.tool === s.tool) hint('.swatch[data-color="' + s.color + '"]');
+    }
+  }
+
+  function completeStep() {
+    var s = step();
+    state.busy = true; disarm();
+    A.play("done");
+    say(s.success, "good");
+    state.step++;
+    updateSteps();
+    $("#tracker").innerHTML = '<li class="slot is-done is-all"><span class="slot-label">Step done!</span></li>';
+    $("#drawer").classList.remove("is-next"); $("#palette").classList.remove("is-next");
+    setTimeout(function () { if (state.step < scene.steps.length) startStep(); else showFinale(); }, 1500);
+  }
+
+  function doSave() {
+    state.busy = true; disarm();
+    A.play("save");
+    var f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+    $("#saved-chip").classList.add("go");
+    completeStep();
+  }
+
+  /* ---------- Using the tool on the card ---------- */
+  function toCanvas(e) {
+    var r = $("#guide").getBoundingClientRect();
+    return { x: (e.clientX - r.left) / r.width * P.W, y: (e.clientY - r.top) / r.height * P.H };
+  }
+
+  function act(x, y, phase) {
+    var s = step(), a = s.action, hex = stepHex(s), i, left;
+    switch (a.do) {
+      case "fill":
+        if (phase !== "down") return;
+        if (!painter.inRegion(a.region, x, y)) { A.play("oops"); say(s.missPrompt, "oops"); return; }
+        state.busy = true; disarm(); A.play("pour");
+        painter.fill(a.region, a.mode, hex, completeStep);
+        break;
+
+      case "columns":
+        if (!painter.nearZone(a.zone, x, y)) { if (phase === "down") say(s.missPrompt, "neutral"); return; }
+        var col = Math.floor(x / P.COLW);
+        for (i = col - 1; i <= col + 1; i++) {
+          if (Math.abs(i * P.COLW + P.COLW / 2 - x) <= 16 && painter.column(a.effect, a.zone, i, hex)) A.play("dab");
+        }
+        painter.drawGuide(guideTarget(), state.pointer);
+        if (painter.colCount(a.effect, a.zone) / P.COLS >= 0.8) {
+          state.busy = true; disarm();
+          painter.finishColumns(a.effect, a.zone, hex, completeStep);
+        }
+        break;
+
+      case "stamp":
+      case "shape":
+        if (phase !== "down") return;
+        if (!painter.inRegion(a.region, x, y)) { A.play("oops"); say(s.missPrompt, "oops"); return; }
+        A.play("stamp");
+        if (a.do === "stamp") placeStamp(painter, a, x, y); else placeShape(painter, a, x, y, hex);
+        state.count++;
+        left = (a.count || 1) - state.count;
+        if (left <= 0) completeStep(); else say(left === 1 ? "One more!" : left + " more to go!", "good");
+        break;
+
+      case "sparkle":
+        if (!painter.inRegion(a.region, x, y)) { if (phase === "down") say(s.missPrompt, "neutral"); return; }
+        var far = painter.sparkles.every(function (q) { return Math.hypot(q[0] - x, q[1] - y) > 24; });
+        if (!far) return;
+        painter.sparkle(x, y, hex, rnd(6, 10));
+        A.play("dab");
+        state.count++;
+        left = a.count - state.count;
+        if (left <= 0) completeStep(); else if (left <= 3) say(left === 1 ? "One more star!" : left + " more stars!", "good");
+        break;
+
+      case "text":
+        if (phase !== "down") return;
+        if (!painter.inRegion(a.region, x, y)) { A.play("oops"); say(s.missPrompt, "oops"); return; }
+        A.play("stamp");
+        painter.text(a.text, x, y, hex);
+        completeStep();
+        break;
+
+      case "erase":
+        var hits = painter.eraseAt(x, y);
+        if (hits) A.play("dab");
+        else if (phase === "down") say(s.missPrompt, "neutral");
+        if (painter.erasedCount / painter.scribbleSamples().length >= 0.85) {
+          painter.eraseRest();
+          completeStep();
+        } else painter.drawGuide(guideTarget(), state.pointer);
+        break;
+    }
+  }
+
+  /* Keyboard players: Enter or Space on the card uses the tool at a sensible spot */
+  function actByKeyboard() {
+    if (!state.armed || state.busy) return;
+    var a = step().action, i;
+    if (a.do === "columns") {
+      var z = painter.zone(a.zone);
+      for (i = 0; i < P.COLS; i++) if (!painter.colDone(a.effect, a.zone, i)) {
+        var x = i * P.COLW + P.COLW / 2; act(x, (z.top(x) + Math.min(z.bottom(x), P.H - 10)) / 2, "down"); return;
+      }
+    } else if (a.do === "erase") {
+      var smp = painter.scribbleSamples();
+      for (i = 0; i < smp.length; i++) if (!painter.erased[i]) { act(smp[i][0], smp[i][1], "down"); return; }
+    } else if (a.do === "fill") {
+      var r = painter.region(a.region); act(P.W / 2, (r.top(P.W / 2) + r.bottom(P.W / 2)) / 2, "down");
+    } else if (a.auto) {
+      var q = a.auto[state.count % a.auto.length]; act(q[0], q[1], "down");
+    }
+  }
+
+  function bindCanvas() {
+    var cv = $("#guide");
+    cv.addEventListener("pointerdown", function (e) {
+      if (!state.armed || state.busy) {
+        if (!state.busy) { A.play("oops"); say(step().action.do === "save" ? step().intro : D.text.canvasNotReady, "neutral"); }
+        return;
+      }
+      state.down = true;
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+      var p = toCanvas(e); state.pointer = p;
+      act(p.x, p.y, "down");
+    });
+    cv.addEventListener("pointermove", function (e) {
+      var p = toCanvas(e); state.pointer = p;
+      if (!state.armed || state.busy) return;
+      if (state.down) act(p.x, p.y, "move");
+      if (state.armed) painter.drawGuide(guideTarget(), p);
+    });
+    function up() { state.down = false; }
+    cv.addEventListener("pointerup", up);
+    cv.addEventListener("pointercancel", up);
+    cv.addEventListener("pointerleave", function () { state.pointer = null; if (state.armed) painter.drawGuide(guideTarget(), null); });
+    cv.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); actByKeyboard(); } });
+  }
+
+  /* ---------- Finished ---------- */
+  function showFinale() {
+    painter.copyTo($("#final-card"));
+    var stars = state.mistakes <= 2 ? 3 : state.mistakes <= 5 ? 2 : 1;
+    progress[scene.id] = Math.max(progress[scene.id] || 0, stars); saveProgress();
+    $$("#stars .star").forEach(function (el, i) { el.classList.toggle("is-on", i < stars); });
+    $("#stars").setAttribute("aria-label", stars + " of 3 stars");
+    $("#final-note").textContent = D.text["stars" + stars];
+    $("#final-hazel-line").textContent = D.text.finalHazel;
+    $("#final-title").textContent = scene.name + ": done!";
+    var gr = $("#greeting"); gr.textContent = scene.greeting || ""; gr.hidden = !scene.greeting;
+    var list = $("#recap"); list.innerHTML = "";
+    scene.steps.forEach(function (s) {
+      var t = toolById(s.tool), o = s.option ? optionById(s.tool, s.option) : null;
+      var li = document.createElement("li");
+      li.innerHTML = '<img src="' + t.icon + '" alt=""><span class="effect">' + s.instruction + '</span><span class="tool-used">' + t.label + (o ? " → " + o.label : "") + "</span>";
+      list.appendChild(li);
+    });
+    show("final");
+  }
+
+  /* ---------- Boot ---------- */
+  function init() {
+    painter = new P($("#art"), $("#guide"));
+    painter.setScene(D.scenes[0].id);
+    buildToolbar(); buildPalette(); bindCanvas();
+    $("#welcome-line").textContent = D.text.welcome;
+    $("#menu-title").textContent = D.text.menuTitle;
+    $("#menu-sub").textContent = D.text.menuSub;
+
+    var imgs = {};
+    D.options.stamp.items.forEach(function (it) { imgs[it.id] = it.img; });
+    var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    Promise.all([WSW.loadImages(imgs), fontsReady]).then(buildPreviews);
+
+    $("#btn-start").addEventListener("click", function () { A.unlock(); A.play("good"); renderMenu(); });
+    $("#btn-go").addEventListener("click", function () { A.unlock(); A.play("good"); startScene(); });
+    $("#btn-brief-back").addEventListener("click", function () { A.play("click"); renderMenu(); });
+    $("#btn-menu").addEventListener("click", function () { A.play("click"); disarm(); state.busy = true; renderMenu(); });
+    $("#btn-again").addEventListener("click", function () { A.play("click"); openBrief(scene.id); });
+    $("#btn-pick").addEventListener("click", function () { A.play("click"); renderMenu(); });
+    $$(".btn-sound").forEach(function (b) {
+      b.addEventListener("click", function () {
+        A.unlock(); A.muted = !A.muted;
+        $$(".btn-sound").forEach(function (x) { x.setAttribute("aria-pressed", A.muted); x.textContent = A.muted ? "Sound off" : "Sound on"; });
+      });
+    });
+    window.addEventListener("resize", fit);
+    fit();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+
+</script>
+</body>
+</html>

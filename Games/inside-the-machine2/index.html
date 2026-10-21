@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside the Machine</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="viewport">
+  <!-- The game is a fixed 1130 x 502 frame, scaled to fit the window (letterboxed). -->
+  <div class="frame" id="frame">
+    <header class="top">
+      <button class="brand" type="button" id="home" aria-label="Inside the Machine: back to start">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="12" y="12" width="24" height="24" rx="3" fill="#FFC21A"/><rect x="18" y="18" width="12" height="12" rx="2" fill="#0E4A33" opacity=".35"/><path d="M18 5v7M24 5v7M30 5v7M18 36v7M24 36v7M30 36v7M5 18h7M5 24h7M5 30h7M36 18h7M36 24h7M36 30h7" stroke="#E0994F" stroke-width="3" stroke-linecap="round"/></svg>
+        <span><h1>Inside the Machine</h1><p>Lesson 1: Explore Computers</p></span>
+      </button>
+      <nav class="track" id="track" aria-label="Levels"></nav>
+      <button class="mute" type="button" id="mute" aria-pressed="false" aria-label="Sound on"></button>
+    </header>
+    <div class="body">
+      <aside class="side">
+        <div class="task" id="task"></div>
+        <div class="coach" id="coach">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 14V7" stroke="#17694A" stroke-width="3"/><circle cx="24" cy="6" r="3.5" fill="#E0994F"/><rect x="7" y="14" width="34" height="26" rx="9" fill="#17694A"/><circle cx="17.5" cy="26" r="4.5" fill="#FFC21A"/><circle cx="30.5" cy="26" r="4.5" fill="#FFC21A"/><path d="M18 34h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          <p id="say" aria-live="polite"></p>
+        </div>
+        <p class="tally" id="tally"></p>
+      </aside>
+      <main class="play" id="stage"></main>
+    </div>
+  </div>
+</div>
+<!--SCRIPTS-->
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/content.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/levels/intro.js"></script>
+<script src="js/levels/level1-chip-scanner.js"></script>
+<script src="js/levels/level2-desk-setup.js"></script>
+<script src="js/levels/level3-xray.js"></script>
+<script src="js/levels/level4-tap-the-part.js"></script>
+<script src="js/levels/level5-sorting-belt.js"></script>
+<script src="js/levels/badge.js"></script>
+<script src="js/main.js"></script>
+<!--/SCRIPTS-->
+</body>
+</html>

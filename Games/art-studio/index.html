@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Art Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+
+    <!-- ============ TITLE ============ -->
+    <section id="screen-title" class="screen is-active" aria-label="Start">
+      <div class="title-copy">
+        <p class="lesson-tag">Lesson 6: Creative Art</p>
+        <h1 class="title">Art Studio</h1>
+        <p class="title-sub">Every effect needs the right tool. Paint pictures one tool at a time.</p>
+        <ol class="howto">
+          <li><span class="howto-n">1</span>Pick a picture</li>
+          <li><span class="howto-n">2</span>Pick the right tool</li>
+          <li><span class="howto-n">3</span>Use it on the card</li>
+        </ol>
+        <div class="title-actions">
+          <button id="btn-start" class="btn btn-primary" type="button">Start painting</button>
+          <button class="btn btn-ghost btn-sound" type="button" aria-pressed="false">Sound on</button>
+        </div>
+      </div>
+      <div class="title-hazel">
+        <p class="bubble bubble-big" id="welcome-line"></p>
+        <img src="assets/characters/hazel-happy.svg" alt="Hazel the snow hare, wearing a red scarf">
+      </div>
+      <div class="title-snow" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============ MENU: pick a picture ============ -->
+    <section id="screen-menu" class="screen" aria-label="Pick a picture">
+      <header class="menu-head">
+        <div>
+          <p class="lesson-tag">Art Studio</p>
+          <h2 id="menu-title" class="menu-title"></h2>
+          <p id="menu-sub" class="menu-sub"></p>
+        </div>
+        <button class="btn-mini btn-sound" type="button" aria-pressed="false">Sound on</button>
+      </header>
+      <div id="scene-grid" class="scene-grid"></div>
+    </section>
+
+    <!-- ============ BRIEF: what you'll make ============ -->
+    <section id="screen-brief" class="screen" aria-label="What you'll make">
+      <figure class="brief-pic">
+        <canvas id="brief-preview" aria-hidden="true"></canvas>
+        <figcaption>What you'll make</figcaption>
+      </figure>
+      <div class="brief-panel">
+        <div class="brief-hazel">
+          <img src="assets/characters/hazel-happy.svg" alt="">
+          <p id="brief-hazel" class="bubble"></p>
+        </div>
+        <h2 id="brief-name" class="brief-name"></h2>
+        <p id="brief-goal" class="brief-goal"></p>
+        <h3 class="brief-list-title">Instructions</h3>
+        <ol id="brief-steps" class="brief-steps"></ol>
+        <div class="brief-actions">
+          <button id="btn-go" class="btn btn-primary" type="button">OK, let's paint!</button>
+          <button id="btn-brief-back" class="btn btn-ghost" type="button">Back to pictures</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GAME ============ -->
+    <section id="screen-game" class="screen" aria-label="Paint the picture">
+      <header class="topbar">
+        <div class="brand"><span class="lesson-tag">Lesson 6</span><span class="brand-name">Art Studio</span><span id="scene-chip" class="scene-chip"></span></div>
+        <div class="topbar-right">
+          <span id="step-count" class="step-count" aria-live="polite">Step 1 of 6</span>
+          <button id="btn-menu" class="btn-mini" type="button">Pictures</button>
+          <button class="btn-mini btn-sound" type="button" aria-pressed="false">Sound on</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="instructions" aria-label="Instructions">
+          <h2 class="instructions-head">Instructions</h2>
+          <ol id="steps" class="steps"></ol>
+        </aside>
+
+        <nav id="toolbar" class="toolbar" aria-label="Tools"></nav>
+
+        <aside id="drawer" class="drawer" aria-label="Tool choices">
+          <h2 id="drawer-title" class="drawer-title">Choices</h2>
+          <div id="drawer-body" class="drawer-body"></div>
+        </aside>
+
+        <div class="main">
+          <div id="coach" class="coach">
+            <img id="hazel" src="assets/characters/hazel.svg" alt="Hazel">
+            <div id="coach-bubble" class="coach-bubble">
+              <p id="bubble" class="coach-text" aria-live="polite"></p>
+              <ol id="tracker" class="tracker" aria-label="What to do in this step"></ol>
+            </div>
+          </div>
+          <div class="easel" id="easel">
+            <div class="card-frame">
+              <canvas id="art" aria-hidden="true"></canvas>
+              <canvas id="guide" tabindex="0" aria-label="Your picture. When a tool is ready, click here, or press Enter to use it."></canvas>
+              <div id="flash" class="flash" aria-hidden="true"></div>
+              <div id="saved-chip" class="saved-chip" aria-hidden="true">Saved</div>
+            </div>
+            <div id="palette" class="palette" role="group" aria-label="Colors"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL ============ -->
+    <section id="screen-final" class="screen" aria-label="Picture finished">
+      <div class="final-card-wrap">
+        <div class="final-card">
+          <canvas id="final-card"></canvas>
+          <p id="greeting" class="greeting"></p>
+        </div>
+        <div class="final-hazel">
+          <img src="assets/characters/hazel-happy.svg" alt="">
+          <p class="bubble is-good" id="final-hazel-line"></p>
+        </div>
+      </div>
+      <div class="final-panel">
+        <h2 id="final-title" class="final-title"></h2>
+        <div id="stars" class="stars" role="img" aria-label="">
+          <span class="star"></span><span class="star"></span><span class="star"></span>
+        </div>
+        <p id="final-note" class="final-note"></p>
+        <h3 class="recap-title">The right tool for each effect</h3>
+        <ul id="recap" class="recap"></ul>
+        <div class="final-actions">
+          <button id="btn-pick" class="btn btn-primary" type="button">Pick another picture</button>
+          <button id="btn-again" class="btn btn-ghost" type="button">Paint it again</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+<script src="data/game-data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/painter.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

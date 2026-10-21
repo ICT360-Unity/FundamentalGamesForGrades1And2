@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netizen Badge Quest · L5 Digital Citizenship</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="stage" aria-label="Netizen Badge Quest game">
+
+    <section class="sash" aria-label="My badges">
+      <div class="sash-head"><h2>My badges</h2><span class="sash-count" id="sash-count">0 of 10</span></div>
+      <ul class="sash-grid" id="sash-grid"></ul>
+    </section>
+
+    <section class="tablet" aria-label="Tablet">
+      <div class="screen">
+        <div class="status">
+          <span>My Tablet</span>
+          <span id="clock"></span>
+          <span class="status-right">
+            <button class="mute" id="mute" aria-label="Sound on. Turn sound off">🔊</button>
+            <span class="battery" aria-hidden="true"></span>
+          </span>
+        </div>
+        <div class="screen-body" id="screen-body"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="data/scenarios.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/password.js"></script>
+  <script src="js/confetti.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

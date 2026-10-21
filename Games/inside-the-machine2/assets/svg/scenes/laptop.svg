@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="270" viewBox="0 0 400 270" aria-label="A laptop"><style>.hw{fill:#F1F6F2;stroke:#12281F;stroke-width:3}.scr{fill:#27506B}.desk{fill:#B86A22;opacity:.55}
+.inkline{stroke:#12281F;stroke-width:3;fill:none;stroke-linecap:round}.keys{stroke:#4A6257;stroke-width:4;stroke-dasharray:11 5;fill:none}
+.kb,.pad{fill:#FFFFFF;stroke:#12281F;stroke-width:2}.lens,.port{fill:#12281F}.btn{fill:#4A6257}
+.dots{stroke:#12281F;stroke-width:4.5;stroke-linecap:round;fill:none}.hit{fill:none;stroke:none}</style>
+ <rect x="60" y="4" width="280" height="182" rx="14" class="hw"/>
+ <path d="M22 192H378L396 250Q398 262 386 262H14Q2 262 4 250Z" class="hw"/>
+ <g id="hotspot-screen"><rect x="74" y="30" width="252" height="144" rx="4" class="scr"/><rect x="74" y="30" width="252" height="144" rx="4" class="hit"/></g>
+ <g id="hotspot-webcam"><circle cx="200" cy="17" r="12" class="hit"/><circle cx="200" cy="17" r="4.5" class="lens"/></g>
+ <g id="hotspot-keyboard"><rect x="76" y="200" width="248" height="30" rx="4" class="kb"/><path d="M84 207h232M84 215h232M84 223h232" class="keys"/><rect x="76" y="200" width="248" height="30" rx="4" class="hit"/></g>
+ <g id="hotspot-touchpad"><rect x="164" y="236" width="72" height="20" rx="4" class="pad"/><rect x="160" y="233" width="80" height="26" rx="5" class="hit"/></g>
+ <g id="hotspot-speaker"><path d="M40 207h0M48 207h0M56 207h0M64 207h0M40 215h0M48 215h0M56 215h0M64 215h0M40 223h0M48 223h0M56 223h0M64 223h0M336 207h0M344 207h0M352 207h0M360 207h0M336 215h0M344 215h0M352 215h0M360 215h0M336 223h0M344 223h0M352 223h0M360 223h0" class="dots"/><rect x="33" y="200" width="38" height="30" rx="4" class="hit"/><rect x="329" y="200" width="38" height="30" rx="4" class="hit"/></g>
+ <g id="hotspot-usb"><rect x="3" y="216" width="27" height="28" rx="4" class="hit"/><rect x="10" y="226" width="15" height="8" rx="1.5" class="port"/></g>
+</svg>

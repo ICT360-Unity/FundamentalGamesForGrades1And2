@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Internet Postman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+/* =========================================================
+   Internet Postman — styles
+   Colours and fonts are tokens on :root. Change them here.
+   ========================================================= */
+:root {
+  --post-red: #D7263D;
+  --post-red-dark: #A81C2F;
+  --air-blue: #1B4F9C;
+  --air-blue-dark: #133A74;
+  --ink: #18264A;
+  --ink-soft: #4A5A80;
+  --sky: #CDEBFF;
+  --paper: #FFFFFF;
+  --kraft: #D9AE73;
+  --kraft-dark: #B47F45;
+  --sun: #F2B632;
+  --good: #2E9E6B;
+  --good-soft: #DDF3E8;
+  --bad: #D7263D;
+  --bad-soft: #FBE2E5;
+  --link: #1A5FD6;
+  --url-green: #2E7D4F;
+
+  --font: "Baloo 2", "Nunito", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+
+  --airmail: repeating-linear-gradient(-45deg,
+      var(--post-red) 0 12px, #fff 12px 20px,
+      var(--air-blue) 20px 32px, #fff 32px 40px);
+
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --lift: 0 4px 0 rgba(24, 38, 74, .18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #0F1A33; overflow: hidden; }
+body { font-family: var(--font); color: var(--ink); -webkit-user-select: none; user-select: none; }
+button { font-family: inherit; cursor: pointer; border: none; color: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+/* ---------- stage (fixed 1130 x 502, scaled to fit) ---------- */
+#viewport { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+#stage {
+  position: relative; width: 1130px; height: 502px; flex: none;
+  overflow: hidden; background: var(--sky); transform-origin: center center;
+}
+.screen { position: absolute; inset: 0; }
+.bg-city { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.dim { position: absolute; inset: 0; background: rgba(235, 246, 255, .72); pointer-events: none; }
+
+/* ---------- title screen ---------- */
+.title-card {
+  position: absolute; inset: 0 0 40px 0; margin: auto; height: fit-content;
+  width: 640px; padding: 26px 36px 30px; text-align: center;
+  border: 10px solid transparent; border-radius: 24px;
+  background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box;
+  box-shadow: 0 8px 0 rgba(24, 38, 74, .25);
+}
+.title-card h1 { font-size: 58px; line-height: 1; font-weight: 800; color: var(--air-blue); letter-spacing: -1px; }
+.title-card h1 span { color: var(--post-red); display: block; font-size: 30px; letter-spacing: 0; margin-bottom: 4px; }
+.title-card p { font-size: 20px; color: var(--ink-soft); margin: 8px 0 20px; }
+.title-pip { position: absolute; left: 70px; bottom: 30px; width: 150px; }
+.title-parcel { position: absolute; right: 90px; bottom: 40px; width: 120px; transform: rotate(-8deg); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 28px; border-radius: 999px; font-size: 22px; font-weight: 800;
+  background: var(--post-red); color: #fff; box-shadow: 0 5px 0 var(--post-red-dark);
+  transition: transform .08s;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--post-red-dark); }
+.btn.blue { background: var(--air-blue); box-shadow: 0 5px 0 var(--air-blue-dark); }
+.btn.small { font-size: 18px; padding: 6px 20px; }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+.btn.pulse { animation: pulse 1s ease-in-out infinite; }
+
+/* ---------- HUD ---------- */
+.hud {
+  position: absolute; left: 0; right: 0; top: 0; height: 50px;
+  display: flex; align-items: center; gap: 14px; padding: 0 14px;
+  background: var(--paper); z-index: 20;
+}
+.hud::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; background: var(--airmail); }
+.hud-btn {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--sky);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--air-blue);
+}
+.hud-title { font-size: 21px; font-weight: 800; color: var(--air-blue); }
+.hud-round { font-size: 17px; font-weight: 700; color: var(--ink-soft); }
+.hud-spacer { flex: 1; }
+.hud-dots { display: flex; gap: 6px; }
+.hud-dots i { width: 26px; height: 20px; border-radius: 4px; background: #E6EDF7; border: 2px solid #C8D4E6; }
+.hud-dots i.done { background: var(--kraft); border-color: var(--kraft-dark); }
+.hud-dots i.now { border-color: var(--post-red); }
+.hud-shields { display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 18px; color: var(--good); }
+.hud-shields img { width: 24px; }
+
+/* ---------- instruction guide (Pip + message) + play area ---------- */
+.guide {
+  position: absolute; left: 0; right: 0; top: 62px; height: 64px; z-index: 15;
+  display: flex; align-items: center; justify-content: center; gap: 6px; pointer-events: none;
+}
+.guide > img { width: 52px; height: 64px; object-fit: cover; object-position: top; flex: none; }
+.say {
+  position: relative; max-width: 940px; min-height: 48px; display: flex; align-items: center; gap: 10px;
+  padding: 6px 22px; border-radius: 16px; background: var(--paper); border: 3px solid var(--ink);
+  font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--ink); box-shadow: var(--lift);
+}
+.say::before {
+  content: ""; position: absolute; left: -11px; top: 50%; margin-top: -9px;
+  border: 9px solid transparent; border-left: 0; border-right: 10px solid var(--ink);
+}
+.say.good { background: var(--good-soft); border-color: var(--good); }
+.say.good::before { border-right-color: var(--good); }
+.say.bad { background: var(--bad-soft); border-color: var(--bad); }
+.say.bad::before { border-right-color: var(--bad); }
+.say-ic {
+  flex: none; width: 30px; height: 30px; border-radius: 50%; color: #fff; font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.say.good .say-ic { background: var(--good); }
+.say.bad .say-ic { background: var(--bad); }
+.say.flash { animation: flash .35s ease; }
+.play { position: absolute; left: 0; right: 0; top: 132px; bottom: 0; }
+
+/* ---------- round intro card ---------- */
+.intro-card {
+  position: absolute; inset: 0; margin: auto; height: fit-content;
+  width: 640px; background: var(--paper); border-radius: var(--radius-lg);
+  padding: 24px 34px 26px; text-align: center; box-shadow: 0 8px 0 rgba(24, 38, 74, .2);
+}
+.intro-card .stamp {
+  display: inline-block; padding: 2px 16px; border: 3px dashed var(--post-red);
+  border-radius: 8px; color: var(--post-red); font-weight: 800; font-size: 18px; transform: rotate(-3deg);
+}
+.intro-card h2 { font-size: 40px; color: var(--air-blue); margin: 6px 0 4px; line-height: 1.1; }
+.intro-card .teach { font-size: 21px; line-height: 1.3; margin: 6px 0 4px; }
+.intro-card .task { font-size: 18px; color: var(--ink-soft); margin-bottom: 18px; }
+
+/* ---------- toast & modal ---------- */
+.toast {
+  position: absolute; left: 50%; top: 70px; transform: translateX(-50%);
+  padding: 8px 22px; border-radius: 999px; font-size: 20px; font-weight: 800;
+  background: var(--good); color: #fff; z-index: 40; white-space: nowrap;
+  animation: toast 1.6s ease forwards; pointer-events: none;
+}
+.toast.bad { background: var(--bad); }
+.modal-wrap { position: absolute; inset: 0; background: rgba(15, 26, 51, .55); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.modal { width: 600px; background: var(--paper); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 0 rgba(0, 0, 0, .25); animation: pop .25s ease; }
+
+/* ---------- shared bits ---------- */
+.tile {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 90px; height: 54px; padding: 0 16px; border-radius: var(--radius-md);
+  background: var(--paper); border: 3px solid var(--air-blue); box-shadow: var(--lift);
+  font-size: 26px; font-weight: 800; color: var(--ink); cursor: grab; touch-action: none;
+}
+.dragging { z-index: 100 !important; cursor: grabbing; box-shadow: 0 10px 18px rgba(24, 38, 74, .3) !important; }
+.returning { transition: translate .25s ease, scale .2s ease !important; }
+.drop-hover { outline: 4px dashed var(--sun); outline-offset: 2px; }
+.shake { animation: shake .4s; }
+.pop { animation: pop .3s ease; }
+
+/* =========================================================
+   ROUND 1 — Address Workshop
+   ========================================================= */
+.r1-target {
+  position: absolute; left: 0; right: 0; top: 4px; margin: 0 auto; width: fit-content;
+  display: flex; align-items: center; gap: 12px; padding: 5px 8px 5px 20px; border-radius: var(--radius-md);
+  background: var(--kraft); box-shadow: inset 0 0 0 3px var(--kraft-dark), var(--lift);
+  font-size: 19px; font-weight: 700; color: #4D3416;
+}
+.r1-target b { background: var(--paper); border-radius: var(--radius-sm); padding: 0 16px; font-size: 28px; color: var(--air-blue); }
+.r1-strip {
+  position: absolute; left: 0; right: 0; top: 70px; margin: 0 auto; width: 720px; height: 128px;
+  background: var(--paper); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; gap: 6px;
+  box-shadow: var(--lift);
+}
+.r1-strip-title { position: absolute; left: 20px; top: 8px; font-size: 16px; font-weight: 700; color: var(--ink-soft); }
+.r1-slot {
+  position: relative; min-width: 150px; height: 64px; border-radius: var(--radius-md);
+  border: 3px dashed #9FB2D3; background: #F3F7FD; display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; margin-top: 14px;
+}
+.r1-slot.wide { min-width: 220px; }
+.r1-slot.filled { border-style: solid; border-color: var(--good); background: var(--good-soft); }
+.r1-slot .slot-name { position: absolute; bottom: -24px; font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.r1-dot { font-size: 40px; font-weight: 800; color: var(--air-blue); margin-top: 8px; }
+.r1-tray {
+  position: absolute; left: 0; right: 0; top: 218px; margin: 0 auto; width: 720px; height: 130px;
+  display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 14px;
+  border-radius: var(--radius-lg); background: rgba(255, 255, 255, .5); border: 3px solid rgba(255, 255, 255, .9);
+}
+
+/* =========================================================
+   ROUND 2 — Open the Right Door
+   ========================================================= */
+.r2-ticket {
+  position: absolute; left: 0; right: 0; top: 2px; margin: 0 auto; width: fit-content;
+  display: flex; align-items: center; gap: 12px; padding: 5px 8px 5px 20px; border-radius: var(--radius-md);
+  background: var(--kraft); box-shadow: inset 0 0 0 3px var(--kraft-dark), var(--lift);
+  font-size: 19px; font-weight: 700; color: #4D3416;
+}
+.r2-ticket b { background: var(--paper); border-radius: var(--radius-sm); padding: 0 16px; font-size: 26px; color: var(--air-blue); }
+.r2-street { position: absolute; left: 30px; right: 30px; top: 66px; height: 280px; display: flex; justify-content: space-between; align-items: flex-end; }
+.r2-street.away { opacity: 0; pointer-events: none; transition: opacity .3s; }
+.door {
+  position: relative; width: 158px; height: 216px; border-radius: 80px 80px 8px 8px; margin-bottom: 12px;
+  background: var(--paper); border: 4px solid var(--ink); padding-top: 22px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  box-shadow: 0 6px 0 rgba(24, 38, 74, .25); transition: transform .15s;
+}
+.door:hover { transform: translateY(-4px); }
+.door img { width: 78px; height: 78px; }
+.door .door-name { font-size: 22px; font-weight: 800; }
+.door .knob { position: absolute; right: 16px; top: 128px; width: 12px; height: 12px; border-radius: 50%; background: var(--sun); border: 2px solid var(--ink); }
+.door .step { position: absolute; bottom: -4px; left: -10px; right: -10px; height: 12px; border-radius: 4px; background: var(--ink); }
+.door.nope { background: var(--bad-soft); }
+
+.r2-connect {
+  position: absolute; left: 0; right: 0; top: 8px; margin: 0 auto; width: 760px; height: 330px;
+  background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--lift);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+}
+.r2-connect .status { font-size: 20px; font-weight: 800; color: var(--bad); }
+.r2-connect .status.on { color: var(--good); }
+.r2-net { display: flex; align-items: center; }
+.r2-net .pc { width: 130px; }
+.r2-net .cloud { width: 150px; }
+.r2-gap { width: 200px; height: 56px; margin: 0 6px; border: 3px dashed var(--bad); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.r2-gap.fixed { border-color: transparent; }
+.r2-cable { width: 190px; cursor: grab; touch-action: none; }
+
+/* browser window (rounds 2 and 3) */
+.bw {
+  position: absolute; background: var(--paper); border-radius: var(--radius-md);
+  border: 3px solid var(--ink); overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 10px 0 rgba(24, 38, 74, .25);
+}
+.bw-tabs { height: 34px; background: #DCE4F0; display: flex; align-items: flex-end; padding: 0 10px; gap: 8px; flex: none; }
+.bw-tab { height: 28px; padding: 0 16px; border-radius: 8px 8px 0 0; background: var(--paper); display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+.bw-tab img { width: 18px; }
+.bw-bar { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 2px solid #DCE4F0; flex: none; }
+.bw-nav { width: 32px; height: 32px; border-radius: 50%; background: #EEF2F8; font-size: 20px; font-weight: 800; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; }
+.bw-nav[disabled] { opacity: .35; }
+.bw-addr {
+  flex: 1; height: 34px; border-radius: 999px; background: #EEF2F8; border: 2px solid #C8D4E6;
+  display: flex; align-items: center; padding: 0 16px; font-size: 19px; font-weight: 700; color: var(--ink);
+}
+.bw-addr.empty { color: #8D9BB6; border-style: dashed; border-color: var(--air-blue); }
+.bw-go { height: 34px; padding: 0 18px; border-radius: 999px; background: var(--air-blue); color: #fff; font-size: 17px; font-weight: 800; }
+.bw-go[disabled] { opacity: .35; }
+.bw-body { position: relative; flex: 1; overflow: hidden; }
+.bw-load { position: absolute; left: 0; top: 0; height: 4px; background: var(--air-blue); width: 0; z-index: 2; }
+.bw-load.run { animation: load .9s ease forwards; }
+
+.r2-addrcard {
+  position: absolute; padding: 10px 22px; border-radius: var(--radius-md); background: var(--kraft);
+  border: 3px solid var(--kraft-dark); font-size: 24px; font-weight: 800; box-shadow: var(--lift); cursor: grab; touch-action: none;
+}
+.r2-newtab { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--ink-soft); font-size: 20px; font-weight: 700; }
+.r2-newtab img { width: 72px; height: 72px; }
+.r2-site { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.r2-site-head { height: 64px; display: flex; align-items: center; padding: 0 26px; font-size: 30px; font-weight: 800; color: #fff; background: var(--air-blue); }
+.r2-site-body { flex: 1; display: flex; align-items: center; justify-content: center; }
+.delivered {
+  display: inline-block; padding: 6px 26px; border: 5px solid var(--good); border-radius: 12px; color: var(--good);
+  font-size: 40px; font-weight: 800; transform: rotate(-6deg); animation: stamp .35s ease;
+}
+
+/* =========================================================
+   ROUND 3 — Secret Doors
+   ========================================================= */
+.r3-browser { left: 40px; right: 40px; top: 4px; height: 352px; }
+.r3-page { position: absolute; inset: 0; overflow-y: auto; padding: 12px 34px; }
+.r3-sbox { width: 440px; height: 38px; border-radius: 999px; border: 3px solid var(--air-blue); display: flex; align-items: center; padding: 0 20px; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.r3-results-head { font-size: 16px; color: var(--ink-soft); font-weight: 700; margin-bottom: 8px; }
+.r3-result { margin-bottom: 10px; }
+.r3-result .url { font-size: 15px; color: var(--url-green); font-weight: 700; margin-right: 10px; }
+.r3-result .snip { font-size: 16px; color: var(--ink-soft); }
+.r3-link { background: none; color: var(--link); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; font-size: 23px; padding: 0; text-align: left; }
+.r3-sitehead { display: flex; align-items: baseline; gap: 14px; border-bottom: 3px solid #E6EDF7; padding-bottom: 6px; margin-bottom: 10px; }
+.r3-sitehead .site { font-size: 15px; font-weight: 800; color: var(--post-red); }
+.r3-sitehead h3 { font-size: 30px; line-height: 1.1; }
+.r3-chapters { display: flex; gap: 26px; margin: -2px 0 12px; padding: 6px 12px; background: #F3F7FD; border-radius: var(--radius-sm); width: fit-content; }
+.r3-chapters .r3-link { font-size: 21px; }
+.r3-p { font-size: 21px; line-height: 1.4; margin-bottom: 10px; max-width: 66ch; cursor: default; }
+.r3-bold { font-weight: 800; }
+.r3-linkrow { margin: 8px 0; }
+.r3-found { position: absolute; right: 50px; bottom: 40px; z-index: 3; background: var(--paper); }
+
+/* safety stop card */
+.cp-card {
+  position: absolute; left: 0; right: 0; top: 8px; margin: 0 auto; width: 680px;
+  background: var(--paper); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 8px 0 rgba(24, 38, 74, .25);
+}
+.cp-head { padding: 10px 22px; color: #fff; font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cp-head .stamp-mini { font-size: 14px; padding: 0 10px; border: 2px dashed currentColor; border-radius: 6px; }
+.cp-head.form { background: var(--sun); color: var(--ink); }
+.cp-head.popup { background: #8E3BBF; }
+.cp-head.chat { background: var(--air-blue); }
+.cp-head.choice { background: var(--good); }
+.cp-body { padding: 14px 24px 18px; }
+.cp-prompt { font-size: 21px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+.cp-fake { display: flex; gap: 8px; margin-bottom: 12px; }
+.cp-fake div { flex: 1; height: 34px; border-radius: 8px; border: 2px solid #C8D4E6; background: #F6F8FC; padding: 0 12px; display: flex; align-items: center; color: #8D9BB6; font-size: 16px; }
+.cp-bubble { display: inline-block; background: #E8F0FC; border-radius: 16px 16px 16px 4px; padding: 8px 16px; font-size: 21px; font-weight: 700; margin-bottom: 12px; }
+.cp-choices { display: flex; gap: 10px; }
+.cp-choice { flex: 1; text-align: center; padding: 10px 14px; border-radius: var(--radius-md); background: #EEF2F8; border: 3px solid #C8D4E6; font-size: 19px; font-weight: 700; }
+.cp-choice.ok { background: var(--good-soft); border-color: var(--good); }
+.cp-choice.no { background: var(--bad-soft); border-color: var(--bad); }
+.cp-fb { margin-top: 10px; font-size: 18px; font-weight: 700; line-height: 1.3; display: flex; gap: 10px; align-items: center; }
+.cp-fb:empty { display: none; }
+.cp-fb img { width: 38px; flex: none; }
+.cp-tip { font-size: 15px; font-weight: 800; color: var(--good); }
+.cp-foot { display: flex; justify-content: flex-end; }
+
+/* =========================================================
+   ROUND 4 — Sorting Office
+   ========================================================= */
+.r4-belt { position: absolute; left: 160px; right: 160px; top: 4px; height: 150px; border-radius: var(--radius-lg); background: #3B4A6E; }
+.r4-belt::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 14px; height: 10px; border-radius: 5px; background: repeating-linear-gradient(90deg, #5B6B92 0 22px, #2C3A5C 22px 34px); }
+.r4-card {
+  position: absolute; left: 50%; top: 22px; width: 440px; min-height: 96px; margin-left: -220px; z-index: 5;
+  background: var(--paper); border-radius: var(--radius-md); padding: 12px 22px; border: 3px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 23px; font-weight: 800; line-height: 1.2; box-shadow: var(--lift); cursor: grab; touch-action: none;
+  transition: scale .16s ease, opacity .2s ease;
+}
+.r4-card.short { font-size: 34px; }
+.r4-card.arrive { animation: arrive .45s ease; }
+.r4-count { position: absolute; right: 26px; top: 66px; font-size: 18px; font-weight: 800; color: var(--ink-soft); }
+.r4-bins { position: absolute; left: 30px; right: 30px; bottom: 10px; height: 176px; display: flex; justify-content: space-between; }
+.bin { position: relative; width: 248px; height: 176px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.bin-mouth { position: absolute; top: 0; left: 0; right: 0; height: 30px; border-radius: 10px; }
+.bin-box { width: 228px; height: 146px; border-radius: 0 0 18px 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+.bin-box .bin-name { font-size: 30px; font-weight: 800; }
+.bin-box .bin-n { font-size: 16px; font-weight: 700; opacity: .9; }
+
+/* ---------- end screen ---------- */
+.end-card {
+  position: absolute; inset: 0; margin: auto; height: fit-content;
+  width: 660px; padding: 22px 34px 26px; text-align: center;
+  border: 10px solid transparent; border-radius: 24px;
+  background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box;
+  box-shadow: 0 8px 0 rgba(24, 38, 74, .25);
+}
+.end-card { animation: pop .35s ease; }
+.end-card h2 { font-size: 40px; color: var(--air-blue); line-height: 1.1; }
+.end-stars { display: flex; justify-content: center; gap: 10px; margin: 10px 0 8px; }
+.end-stars img { width: 72px; animation: pop .4s ease both; }
+.end-stars img:nth-child(2) { animation-delay: .15s; width: 86px; margin-top: -10px; }
+.end-stars img:nth-child(3) { animation-delay: .3s; }
+.end-stats { display: flex; justify-content: center; gap: 14px; margin: 10px 0 20px; }
+.end-stat { background: #F3F7FD; border-radius: var(--radius-md); padding: 8px 18px; min-width: 140px; }
+.end-stat b { display: block; font-size: 30px; color: var(--ink); line-height: 1.1; }
+.end-stat span { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.end-btns { display: flex; justify-content: center; gap: 14px; }
+
+/* ---------- animations ---------- */
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+@keyframes pop { 0% { transform: scale(.7); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 12%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+@keyframes stamp { 0% { transform: rotate(-6deg) scale(2); opacity: 0; } 100% { transform: rotate(-6deg) scale(1); opacity: 1; } }
+@keyframes flash { 0% { transform: scale(.94); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes load { to { width: 100%; } }
+@keyframes arrive { from { transform: translateX(-380px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+</style>
+</head>
+<body>
+  <div id="viewport"><div id="stage"></div></div>
+
+  <script>
+/* data/content.js */
+/* =========================================================
+   Internet Postman — game content
+   Grade 3 · Lesson 4 · Browser
+   Edit text here; no JS changes needed for wording.
+   Loaded as a script (not JSON) so the game also runs
+   straight from the file system without a server.
+   ========================================================= */
+window.POSTMAN_DATA = {
+
+  title: "Internet Postman",
+  subtitle: "Deliver parcels across Internet City",
+
+  /* Short teaching line shown on each round's intro card */
+  rounds: [
+    { id: 1, name: "Address Workshop",
+      teach: "Every website has its own special address, like www.kiddle.co.",
+      task: "Build the website address for each parcel." },
+    { id: 2, name: "Open the Right Door",
+      teach: "A browser is like a doorway to the internet. You cannot visit a website without one.",
+      task: "Connect to the internet, pick a browser door, then put the address in the address bar." },
+    { id: 3, name: "Secret Doors",
+      teach: "A link is like a secret door. Click it and it takes you to a new page.",
+      task: "Click the blue links to find the page each friend needs." },
+    { id: 4, name: "Sorting Office",
+      teach: "Internet, browser, website and link: each word means something different.",
+      task: "Sort each card into the right bin." }
+  ],
+
+  /* ---------------- ROUND 1 ---------------- */
+  round1: {
+    parcels: [
+      { use: "School project", to: "Kiddle",
+        address: ["www", "kiddle", ".co"],
+        tiles: ["www", "kiddle", ".co", "kidle", ".cm"],
+        showSlotNames: true },
+      { use: "Talking to family", to: "Family Chat",
+        address: ["www", "familychat", ".com"],
+        tiles: ["www", "familychat", ".com", "ww", "famliychat", ".con"],
+        showSlotNames: true },
+      { use: "Videos and music", to: "Tune Town",
+        address: ["www", "tunetown", ".org"],
+        tiles: ["www", "tunetown", ".org", "w.w.w", "tune town", ".com", "org"],
+        showSlotNames: false }
+    ],
+    slotNames: ["start", "name", "ending"],
+    feedback: {
+      startWrong: "Website addresses start with www.",
+      endingInMiddle: "That's an ending. Endings like .com, .co and .org go last!",
+      wwwElsewhere: "www goes at the start of the address.",
+      spelling: "Look closely at the address. Check the spelling!",
+      wrongEnding: "Check the address. Which ending does it have?"
+    }
+  },
+
+  /* ---------------- ROUND 2 ---------------- */
+  round2: {
+    connectIntro: "This computer is not connected to the internet yet. Drag the cable to connect it.",
+    connected: "Connected! Now a browser can open websites.",
+    doors: [
+      { id: "chrome", name: "Chrome", kind: "browser", icon: "icon-browser-1", color: "#2E9E6B" },
+      { id: "edge", name: "Edge", kind: "browser", icon: "icon-browser-2", color: "#1F7BC2" },
+      { id: "safari", name: "Safari", kind: "browser", icon: "icon-browser-3", color: "#3A8FD9" },
+      { id: "paint", name: "Paint", kind: "app", icon: "icon-paint", color: "#E2843B",
+        msg: "Paint is for drawing pictures. It cannot open websites." },
+      { id: "calc", name: "Calculator", kind: "app", icon: "icon-calc", color: "#7A6BC9",
+        msg: "Calculator is for doing sums. It cannot open websites." },
+      { id: "google", name: "Google", kind: "website", icon: "icon-website", color: "#C2473A",
+        msg: "Google is a website, not a browser! Open a browser first, then you can visit Google." }
+    ],
+    /* uses the three addresses built in Round 1 */
+    parcels: [
+      { address: "www.kiddle.co", site: "Kiddle", use: "School project" },
+      { address: "www.familychat.com", site: "Family Chat", use: "Talking to family" },
+      { address: "www.tunetown.org", site: "Tune Town", use: "Videos and music" }
+    ],
+    rightDoor: "is a browser! Now tell it where to go."
+  },
+
+  /* ---------------- ROUND 3 ---------------- */
+  round3: {
+    searchSite: "Search Street",
+    /* order of play: missions and safety stops */
+    sequence: [
+      { mission: 0 }, { stop: "form" },
+      { mission: 1 }, { stop: "newsite" },
+      { mission: 2 }, { stop: "stranger" }, { stop: "kidfriendly" }
+    ],
+    boldNotLink: "That's bold text, not a link. Links are blue and underlined.",
+    plainNotLink: "That's plain text, not a link. Links are blue and underlined.",
+    missions: [
+      {
+        goal: "Riya needs elephant facts for her school project. Find the Elephants page.",
+        found: "Found it! Riya can read about elephants now.",
+        start: "lions", target: "elephants",
+        pages: {
+          lions: {
+            url: "www.animalclub.org/lions", site: "Animal Club", title: "Lions",
+            blocks: [
+              { t: "p", text: "Lions are big cats. They live in groups called prides." },
+              { t: "bold", text: "Lions can sleep for 20 hours a day!" },
+              { t: "p", text: "Lions live in grasslands where they can see far." },
+              { t: "link", text: "Click here to learn about elephants", go: "elephants" }
+            ]
+          },
+          elephants: {
+            url: "www.animalclub.org/elephants", site: "Animal Club", title: "Elephants",
+            blocks: [
+              { t: "p", text: "Elephants are the biggest animals on land." },
+              { t: "p", text: "An elephant uses its trunk to drink water, like a straw." }
+            ]
+          }
+        }
+      },
+      {
+        goal: "Aarav wants to learn about planets. Find the Planets page.",
+        found: "Found it! Aarav can read about planets now.",
+        wrongPage: "This is {title}. Try another link to find Planets.",
+        start: "home", target: "planets",
+        chapters: [ { text: "The Sun", go: "sun" }, { text: "The Moon", go: "moon" }, { text: "Planets", go: "planets" } ],
+        pages: {
+          home: {
+            url: "www.spacekids.org", site: "Space for Kids", title: "Welcome to space!",
+            blocks: [
+              { t: "p", text: "The links at the top take you to other pages of this website, like chapters in a book." },
+              { t: "bold", text: "Astronauts float in space!" }
+            ]
+          },
+          sun: {
+            url: "www.spacekids.org/sun", site: "Space for Kids", title: "The Sun",
+            blocks: [ { t: "p", text: "The Sun is a star. It gives Earth light and heat." } ]
+          },
+          moon: {
+            url: "www.spacekids.org/moon", site: "Space for Kids", title: "The Moon",
+            blocks: [ { t: "p", text: "The Moon goes around the Earth. People have walked on it!" } ]
+          },
+          planets: {
+            url: "www.spacekids.org/planets", site: "Space for Kids", title: "Planets",
+            blocks: [ { t: "p", text: "There are 8 planets in our solar system. Jupiter is the biggest." } ]
+          }
+        }
+      },
+      {
+        goal: "Meera loves dinosaurs. Find the Dino Facts for Kids website.",
+        found: "Found it! Meera can read about dinosaurs now.",
+        wrongPage: "This is {title}. Press the back button ‹ and try another link.",
+        start: "results", search: "dinosaurs", target: "dino",
+        results: [
+          { title: "Pizza at Home", url: "www.pizzapal.com", snippet: "Make your own pizza.", go: "pizza" },
+          { title: "Dino Facts for Kids", url: "www.dinofacts.org", snippet: "Big dinosaurs, small dinosaurs, horned dinosaurs.", go: "dino" },
+          { title: "Rainbow Colours", url: "www.rainbowfun.org", snippet: "Learn the seven colours of a rainbow.", go: "rainbow" }
+        ],
+        pages: {
+          dino: {
+            url: "www.dinofacts.org", site: "Dino Facts for Kids", title: "Dinosaurs",
+            blocks: [ { t: "p", text: "Dinosaurs lived a very long time ago. Triceratops had three horns on its face." } ]
+          },
+          pizza: {
+            url: "www.pizzapal.com", site: "Pizza Pal", title: "Pizza at Home",
+            blocks: [ { t: "p", text: "Spread the sauce, add cheese and bake." } ]
+          },
+          rainbow: {
+            url: "www.rainbowfun.org", site: "Rainbow Fun", title: "Rainbow Colours",
+            blocks: [ { t: "p", text: "A rainbow has seven colours." } ]
+          }
+        }
+      }
+    ],
+
+    /* Safety stops — one for each Tip for Safe Browsing */
+    checkpoints: {
+      form: {
+        tip: "Do not share personal information",
+        kind: "form",
+        heading: "Join the Lion Club!",
+        prompt: "A website asks you to type your name and home address to see more lions.",
+        choices: [
+          { text: "Type my name and address", ok: false, fb: "Stop! Never give out your name, address or other personal details online without permission from an adult." },
+          { text: "Don't share. Ask an adult first.", ok: true, fb: "Well done! Personal information stays private unless an adult says it's okay." }
+        ]
+      },
+      newsite: {
+        tip: "Always ask an adult",
+        kind: "popup",
+        heading: "Mystery Games Zone",
+        prompt: "A new website you have never seen wants you to visit it!",
+        choices: [
+          { text: "Visit it right away", ok: false, fb: "Before visiting a new website, always ask a parent or guardian if it is safe." },
+          { text: "Ask an adult first", ok: true, fb: "Great choice! Adults know which websites are good to visit." }
+        ]
+      },
+      stranger: {
+        tip: "Be cautious with online friends",
+        kind: "chat",
+        heading: "New message from star_kid_99",
+        prompt: "Hi! I'm your new friend. Where do you live?",
+        choices: [
+          { text: "Tell them where I live", ok: false, fb: "Be careful! Just like in real life, don't talk to strangers on the internet." },
+          { text: "Don't reply. Tell an adult.", ok: true, fb: "Smart move! Telling an adult keeps you safe." }
+        ]
+      },
+      kidfriendly: {
+        tip: "Stick to kid-friendly sites",
+        kind: "choice",
+        heading: "Two websites",
+        prompt: "Which website is made for kids?",
+        choices: [
+          { text: "Scary Monster Clips (not for kids)", ok: false, fb: "That site is not for kids. Use websites designed for children that are educational and fun." },
+          { text: "Dino Facts for Kids", ok: true, fb: "Yes! Kid-friendly sites are educational and fun." }
+        ]
+      }
+    }
+  },
+
+  /* ---------------- ROUND 4 ---------------- */
+  round4: {
+    bins: [
+      { id: "internet", name: "Internet", color: "#1B4F9C" },
+      { id: "browser", name: "Browser", color: "#2E9E6B" },
+      { id: "website", name: "Website", color: "#D7263D" },
+      { id: "link", name: "Link", color: "#7A4FC2" }
+    ],
+    cards: [
+      { text: "Chrome", bin: "browser" },
+      { text: "A huge, invisible network that connects computers all over the world", bin: "internet" },
+      { text: "Kiddle", bin: "website", hint: "Kiddle is a website made for kids. You visit it using a browser." },
+      { text: "Click here to learn about elephants", bin: "link", hint: "You can click these words to go to another page. That makes it a link." },
+      { text: "Edge", bin: "browser" },
+      { text: "Like a digital book on the internet, with pages of information", bin: "website" },
+      { text: "Google", bin: "website", hint: "Google is a website, not a browser. You open a browser like Chrome, then visit Google." },
+      { text: "The software used to connect to the internet", bin: "browser" },
+      { text: "A word that can be clicked to go to another page or website", bin: "link" },
+      { text: "Safari", bin: "browser" },
+      { text: "Connects homes, schools, libraries and businesses", bin: "internet" }
+    ],
+    hints: {
+      internet: "The internet is the giant network that connects computers everywhere.",
+      browser: "A browser is the tool you open to visit websites.",
+      website: "A website is a place on the internet with pages of information.",
+      link: "A link is a word or sentence you click to go to another page."
+    }
+  }
+};
+
+</script>
+  <script>window.ASSET_DATA = {"cable": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgNDAiPgogIDxyZWN0IHg9IjQiIHk9IjEyIiB3aWR0aD0iMjIiIGhlaWdodD0iMTYiIHJ4PSIzIiBmaWxsPSIjMTgyNjRBIi8+CiAgPHJlY3QgeD0iMCIgeT0iMTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjMiIGZpbGw9IiNCOEMzRDgiLz48cmVjdCB4PSIwIiB5PSIyMiIgd2lkdGg9IjYiIGhlaWdodD0iMyIgZmlsbD0iI0I4QzNEOCIvPgogIDxwYXRoIGQ9Ik0yNiAyMCBDNjAgNCAxMDAgMzYgMTM0IDIwIiBzdHJva2U9IiNGMkI2MzIiIHN0cm9rZS13aWR0aD0iOCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHJlY3QgeD0iMTM0IiB5PSIxMiIgd2lkdGg9IjIyIiBoZWlnaHQ9IjE2IiByeD0iMyIgZmlsbD0iIzE4MjY0QSIvPgogIDxyZWN0IHg9IjE1NCIgeT0iMTYiIHdpZHRoPSI2IiBoZWlnaHQ9IjMiIGZpbGw9IiNCOEMzRDgiLz48cmVjdCB4PSIxNTQiIHk9IjIyIiB3aWR0aD0iNiIgaGVpZ2h0PSIzIiBmaWxsPSIjQjhDM0Q4Ii8+Cjwvc3ZnPgo=", "city": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTMwIDUwMiIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNYXggc2xpY2UiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJza3kiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjOUZEM0Y3Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRERGMEZDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTEzMCIgaGVpZ2h0PSI1MDIiIGZpbGw9InVybCgjc2t5KSIvPgogIDwhLS0gbmV0d29yayBsaW5lcyBpbiBza3kgLS0+CiAgPGcgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9Ii44IiBmaWxsPSJub25lIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiPgogICAgPHBhdGggZD0iTTEyMCAxMjAgTDMzMCA3MCBMNTYwIDEzMCBMNzkwIDYwIEwxMDEwIDEyMCIvPgogICAgPHBhdGggZD0iTTMzMCA3MCBMNDIwIDE5MCBNNzkwIDYwIEw3MDAgMjAwIi8+CiAgPC9nPgogIDxnIGZpbGw9IiNGRkZGRkYiPgogICAgPGNpcmNsZSBjeD0iMTIwIiBjeT0iMTIwIiByPSI3Ii8+PGNpcmNsZSBjeD0iMzMwIiBjeT0iNzAiIHI9IjciLz48Y2lyY2xlIGN4PSI1NjAiIGN5PSIxMzAiIHI9IjciLz4KICAgIDxjaXJjbGUgY3g9Ijc5MCIgY3k9IjYwIiByPSI3Ii8+PGNpcmNsZSBjeD0iMTAxMCIgY3k9IjEyMCIgcj0iNyIvPgogIDwvZz4KICA8IS0tIGNsb3VkcyAtLT4KICA8ZyBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIuOSI+CiAgICA8ZWxsaXBzZSBjeD0iMjAwIiBjeT0iNjAiIHJ4PSI1MCIgcnk9IjE2Ii8+PGVsbGlwc2UgY3g9IjIzMCIgY3k9IjUwIiByeD0iMzAiIHJ5PSIxOCIvPgogICAgPGVsbGlwc2UgY3g9IjkwMCIgY3k9IjE3MCIgcng9IjU2IiByeT0iMTYiLz48ZWxsaXBzZSBjeD0iOTMwIiBjeT0iMTU4IiByeD0iMzAiIHJ5PSIxOCIvPgogIDwvZz4KICA8IS0tIGJhY2sgc2t5bGluZTogYnVpbGRpbmdzIHNoYXBlZCBsaWtlIGJyb3dzZXIgd2luZG93cyAtLT4KICA8ZyBmaWxsPSIjN0ZCNEUzIj4KICAgIDxyZWN0IHg9IjAiIHk9IjMwMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIyMDIiLz48cmVjdCB4PSIxNDAiIHk9IjI1MCIgd2lkdGg9IjkwIiBoZWlnaHQ9IjI1MiIvPgogICAgPHJlY3QgeD0iMjUwIiB5PSIzMjAiIHdpZHRoPSIxMzAiIGhlaWdodD0iMTgyIi8+PHJlY3QgeD0iNDAwIiB5PSIyMzAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjcyIi8+CiAgICA8cmVjdCB4PSI1MjAiIHk9IjI5MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIyMTIiLz48cmVjdCB4PSI2OTAiIHk9IjI0MCIgd2lkdGg9IjExMCIgaGVpZ2h0PSIyNjIiLz4KICAgIDxyZWN0IHg9IjgyMCIgeT0iMzEwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjE5MiIvPjxyZWN0IHg9Ijk2MCIgeT0iMjYwIiB3aWR0aD0iMTcwIiBoZWlnaHQ9IjI0MiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjNUU5OENGIj4KICAgIDxyZWN0IHg9IjE0MCIgeT0iMjUwIiB3aWR0aD0iOTAiIGhlaWdodD0iMTYiLz48cmVjdCB4PSI0MDAiIHk9IjIzMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxNiIvPgogICAgPHJlY3QgeD0iNjkwIiB5PSIyNDAiIHdpZHRoPSIxMTAiIGhlaWdodD0iMTYiLz48cmVjdCB4PSI5NjAiIHk9IjI2MCIgd2lkdGg9IjE3MCIgaGVpZ2h0PSIxNiIvPgogIDwvZz4KICA8IS0tIGZyb250IHN0cmVldCAtLT4KICA8ZyBmaWxsPSIjM0U2RkE4Ij4KICAgIDxyZWN0IHg9IjMwIiB5PSIzODAiIHdpZHRoPSIxNjAiIGhlaWdodD0iMTIyIiByeD0iNiIvPjxyZWN0IHg9IjMzMCIgeT0iMzYwIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MiIgcng9IjYiLz4KICAgIDxyZWN0IHg9IjYxMCIgeT0iMzkwIiB3aWR0aD0iMTcwIiBoZWlnaHQ9IjExMiIgcng9IjYiLz48cmVjdCB4PSI4OTAiIHk9IjM3MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMzIiIHJ4PSI2Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNDREVCRkYiIG9wYWNpdHk9Ii44NSI+CiAgICA8cmVjdCB4PSI1MCIgeT0iNDAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMjIiIHJ4PSIzIi8+PHJlY3QgeD0iOTUiIHk9IjQwMCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjIyIiByeD0iMyIvPjxyZWN0IHg9IjE0MCIgeT0iNDAwIiB3aWR0aD0iMzAiIGhlaWdodD0iMjIiIHJ4PSIzIi8+CiAgICA8cmVjdCB4PSIzNTAiIHk9IjM4MCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjIyIiByeD0iMyIvPjxyZWN0IHg9IjQyMCIgeT0iMzgwIiB3aWR0aD0iMzAiIGhlaWdodD0iMjIiIHJ4PSIzIi8+CiAgICA8cmVjdCB4PSI2MzAiIHk9IjQxMCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjIyIiByeD0iMyIvPjxyZWN0IHg9IjY4MCIgeT0iNDEwIiB3aWR0aD0iMzAiIGhlaWdodD0iMjIiIHJ4PSIzIi8+PHJlY3QgeD0iNzMwIiB5PSI0MTAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIyMiIgcng9IjMiLz4KICAgIDxyZWN0IHg9IjkxMCIgeT0iMzkwIiB3aWR0aD0iMzAiIGhlaWdodD0iMjIiIHJ4PSIzIi8+PHJlY3QgeD0iOTkwIiB5PSIzOTAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIyMiIgcng9IjMiLz4KICA8L2c+CiAgPHJlY3QgeT0iNDcwIiB3aWR0aD0iMTEzMCIgaGVpZ2h0PSIzMiIgZmlsbD0iIzJDM0Q2NiIvPgogIDxwYXRoIGQ9Ik0wIDQ4NiBIMTEzMCIgc3Ryb2tlPSIjRjJCNjMyIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjMwIDIyIi8+Cjwvc3ZnPgo=", "icon-browser-1": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjgiIGZpbGw9IiMyRTlFNkIiLz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUU2RTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIzMiIgcng9IjEyIiByeT0iMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0RGRjVFOSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHBhdGggZD0iTTQgMzIgSDYwIE05IDE4IEg1NSBNOSA0NiBINTUiIHN0cm9rZT0iI0RGRjVFOSIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=", "icon-browser-2": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3QgeD0iNSIgeT0iOSIgd2lkdGg9IjU0IiBoZWlnaHQ9IjQ2IiByeD0iOCIgZmlsbD0iIzFGN0JDMiIvPgogIDxyZWN0IHg9IjUiIHk9IjkiIHdpZHRoPSI1NCIgaGVpZ2h0PSIxMiIgcng9IjYiIGZpbGw9IiMxNDVBOTAiLz4KICA8Y2lyY2xlIGN4PSIxMyIgY3k9IjE1IiByPSIyLjUiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIyMSIgY3k9IjE1IiByPSIyLjUiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjM4IiByPSIxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTNGMUZDIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNMjAgMzggSDQ0IE0zMiAyNiBDMjYgMzIgMjYgNDQgMzIgNTAgQzM4IDQ0IDM4IDMyIDMyIDI2IiBzdHJva2U9IiNFM0YxRkMiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K", "icon-browser-3": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjgiIGZpbGw9IiNFOEYzRkMiIHN0cm9rZT0iIzNBOEZEOSIgc3Ryb2tlLXdpZHRoPSI1Ii8+CiAgPHBhdGggZD0iTTMyIDEwIFYxNiBNMzIgNDggVjU0IE0xMCAzMiBIMTYgTTQ4IDMyIEg1NCIgc3Ryb2tlPSIjM0E4RkQ5IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik00MiAyMiBMMzUgMzUgTDIyIDQyIEwyOSAyOSBaIiBmaWxsPSIjM0E4RkQ5Ii8+CiAgPHBhdGggZD0iTTQyIDIyIEwzNSAzNSBMMjkgMjkgWiIgZmlsbD0iI0Q3MjYzRCIvPgo8L3N2Zz4K", "icon-calc": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3QgeD0iMTIiIHk9IjQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI1NiIgcng9IjciIGZpbGw9IiM3QTZCQzkiLz4KICA8cmVjdCB4PSIxOCIgeT0iMTAiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgcng9IjMiIGZpbGw9IiNFOUU2RkEiLz4KICA8ZyBmaWxsPSIjRTlFNkZBIj4KICAgIDxyZWN0IHg9IjE4IiB5PSIyOCIgd2lkdGg9IjciIGhlaWdodD0iNyIgcng9IjIiLz48cmVjdCB4PSIyOC41IiB5PSIyOCIgd2lkdGg9IjciIGhlaWdodD0iNyIgcng9IjIiLz48cmVjdCB4PSIzOSIgeT0iMjgiIHdpZHRoPSI3IiBoZWlnaHQ9IjciIHJ4PSIyIi8+CiAgICA8cmVjdCB4PSIxOCIgeT0iMzkiIHdpZHRoPSI3IiBoZWlnaHQ9IjciIHJ4PSIyIi8+PHJlY3QgeD0iMjguNSIgeT0iMzkiIHdpZHRoPSI3IiBoZWlnaHQ9IjciIHJ4PSIyIi8+PHJlY3QgeD0iMzkiIHk9IjM5IiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMiIvPgogICAgPHJlY3QgeD0iMTgiIHk9IjUwIiB3aWR0aD0iNyIgaGVpZ2h0PSI1IiByeD0iMiIvPjxyZWN0IHg9IjI4LjUiIHk9IjUwIiB3aWR0aD0iMTcuNSIgaGVpZ2h0PSI1IiByeD0iMiIvPgogIDwvZz4KPC9zdmc+Cg==", "icon-paint": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHBhdGggZD0iTTMyIDYgQzE0IDYgNCAyMCA0IDMyIEM0IDQ2IDE2IDU4IDMwIDU4IEMzNiA1OCAzNiA1MiAzMyA0OCBDMzAgNDQgMzMgNDAgMzggNDAgSDQ2IEM1NCA0MCA2MCAzNiA2MCAyOCBDNjAgMTYgNDggNiAzMiA2IFoiIGZpbGw9IiNGN0Q5QjUiIHN0cm9rZT0iI0UyODQzQiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSIzMCIgcj0iNSIgZmlsbD0iI0Q3MjYzRCIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTciIHI9IjUiIGZpbGw9IiNGMkI2MzIiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjE1IiByPSI1IiBmaWxsPSIjMkU5RTZCIi8+PGNpcmNsZSBjeD0iNDkiIGN5PSIyNSIgcj0iNSIgZmlsbD0iIzFGN0JDMiIvPgo8L3N2Zz4K", "icon-website": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHBhdGggZD0iTTEyIDQgSDQyIEw1NCAxNiBWNjAgSDEyIFoiIGZpbGw9IiNGRkYiIHN0cm9rZT0iI0MyNDczQSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHBhdGggZD0iTTQyIDQgVjE2IEg1NCIgZmlsbD0iI0Y2RDRDRiIgc3Ryb2tlPSIjQzI0NzNBIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzMyIgY3k9IjMwIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNDMjQ3M0EiIHN0cm9rZS13aWR0aD0iMyIvPgogIDxwYXRoIGQ9Ik0zOSAzNiBMNDYgNDMiIHN0cm9rZT0iI0MyNDczQSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMTkgNTAgSDQ2IiBzdHJva2U9IiNFN0E3OUUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=", "network-cloud": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgOTAiPgogIDxwYXRoIGQ9Ik0zMCA3NiBDMTQgNzYgNiA2NCAxMCA1MiBDMTMgNDIgMjQgMzggMzIgNDAgQzM0IDI0IDQ4IDE0IDYyIDE2IEM3NiAxOCA4NCAyOCA4NiAzOCBDMTAwIDM2IDExMiA0NiAxMTAgNjAgQzEwOCA3MCAxMDAgNzYgOTAgNzYgWiIgZmlsbD0iI0ZGRkZGRiIgc3Ryb2tlPSIjMUI0RjlDIiBzdHJva2Utd2lkdGg9IjQiLz4KICA8Y2lyY2xlIGN4PSI0NCIgY3k9IjU0IiByPSI1IiBmaWxsPSIjMUI0RjlDIi8+PGNpcmNsZSBjeD0iNjIiIGN5PSI0MCIgcj0iNSIgZmlsbD0iIzFCNEY5QyIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iNTYiIHI9IjUiIGZpbGw9IiMxQjRGOUMiLz4KICA8cGF0aCBkPSJNNDQgNTQgTDYyIDQwIEw4MCA1NiBMNDQgNTQiIHN0cm9rZT0iIzFCNEY5QyIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbGw9Im5vbmUiLz4KPC9zdmc+Cg==", "network-computer": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgOTAiPgogIDxyZWN0IHg9IjgiIHk9IjYiIHdpZHRoPSI4NCIgaGVpZ2h0PSI1NiIgcng9IjYiIGZpbGw9IiMxODI2NEEiLz4KICA8cmVjdCB4PSIxNCIgeT0iMTIiIHdpZHRoPSI3MiIgaGVpZ2h0PSI0NCIgcng9IjMiIGZpbGw9IiNDREVCRkYiLz4KICA8cmVjdCB4PSI0MCIgeT0iNjIiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzJDM0Q2NiIvPgogIDxyZWN0IHg9IjI0IiB5PSI3NiIgd2lkdGg9IjUyIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjMTgyNjRBIi8+Cjwvc3ZnPgo=", "parcel": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgODAiPgogIDxwYXRoIGQ9Ik0xMCAyMiBMNTAgNiBMOTAgMjIgTDUwIDM4IFoiIGZpbGw9IiNFMkI1N0EiLz4KICA8cGF0aCBkPSJNMTAgMjIgTDUwIDM4IFY3NiBMMTAgNjAgWiIgZmlsbD0iI0M4OTU1QSIvPgogIDxwYXRoIGQ9Ik05MCAyMiBMNTAgMzggVjc2IEw5MCA2MCBaIiBmaWxsPSIjQjQ3RjQ1Ii8+CiAgPHBhdGggZD0iTTMwIDE0IEw3MCAzMCBWNDQiIHN0cm9rZT0iI0YzRERCMyIgc3Ryb2tlLXdpZHRoPSI3IiBmaWxsPSJub25lIi8+CiAgPHJlY3QgeD0iNTgiIHk9IjQ2IiB3aWR0aD0iMjIiIGhlaWdodD0iMTQiIHJ4PSIyIiBmaWxsPSIjRkZGRkZGIiB0cmFuc2Zvcm09InNrZXdZKC0yMikgdHJhbnNsYXRlKDAgMjIpIi8+Cjwvc3ZnPgo=", "pip": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTUwIj4KICA8IS0tIHNhdGNoZWwgc3RyYXAgLS0+CiAgPHBhdGggZD0iTTM4IDc4IEw4NiAxMjgiIHN0cm9rZT0iIzhBNUEyQiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8IS0tIGJvZHkgLS0+CiAgPHBhdGggZD0iTTI4IDE1MCBDMjggMTEyIDQwIDk2IDYwIDk2IEM4MCA5NiA5MiAxMTIgOTIgMTUwIFoiIGZpbGw9IiMxQjRGOUMiLz4KICA8cGF0aCBkPSJNNTIgOTYgTDYwIDExMCBMNjggOTYgWiIgZmlsbD0iI0ZGRkZGRiIvPgogIDwhLS0gc2F0Y2hlbCAtLT4KICA8cmVjdCB4PSI3MCIgeT0iMTE4IiB3aWR0aD0iMzQiIGhlaWdodD0iMjgiIHJ4PSI2IiBmaWxsPSIjRjJCNjMyIiBzdHJva2U9IiM4QTVBMkIiIHN0cm9rZS13aWR0aD0iMyIvPgogIDxwYXRoIGQ9Ik03MCAxMjYgSDEwNCIgc3Ryb2tlPSIjOEE1QTJCIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSI4MiIgeT0iMTI5IiB3aWR0aD0iMTAiIGhlaWdodD0iNyIgcng9IjIiIGZpbGw9IiNENzI2M0QiLz4KICA8IS0tIG5lY2sgLS0+CiAgPHJlY3QgeD0iNTIiIHk9Ijg0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSI1IiBmaWxsPSIjQzk4QTVFIi8+CiAgPCEtLSBoZWFkIC0tPgogIDxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjMwIiBmaWxsPSIjRTBBNTc4Ii8+CiAgPGNpcmNsZSBjeD0iMzEiIGN5PSI2MiIgcj0iNiIgZmlsbD0iI0UwQTU3OCIvPgogIDxjaXJjbGUgY3g9Ijg5IiBjeT0iNjIiIHI9IjYiIGZpbGw9IiNFMEE1NzgiLz4KICA8IS0tIGhhaXIgLS0+CiAgPHBhdGggZD0iTTMyIDU0IEMzMiAzNiA0NiAyOCA2MCAyOCBDNzYgMjggODggMzYgODggNTQgQzgwIDQ2IDcwIDQ0IDYwIDQ0IEM0OCA0NCA0MCA0OCAzMiA1NCBaIiBmaWxsPSIjMkIxQjEyIi8+CiAgPCEtLSBjYXAgLS0+CiAgPHBhdGggZD0iTTI4IDQ2IEMzMCAyNCA0NiAxNCA2MCAxNCBDNzYgMTQgOTAgMjQgOTIgNDYgWiIgZmlsbD0iI0Q3MjYzRCIvPgogIDxwYXRoIGQ9Ik0yNCA0NiBIMTAwIEMxMDAgNTIgOTQgNTQgODYgNTQgSDM0IEMyOCA1NCAyNCA1MiAyNCA0NiBaIiBmaWxsPSIjQTgxQzJGIi8+CiAgPHJlY3QgeD0iNTAiIHk9IjIyIiB3aWR0aD0iMjAiIGhlaWdodD0iMTQiIHJ4PSIyIiBmaWxsPSIjRkZGRkZGIi8+CiAgPHBhdGggZD0iTTUwIDIzIEw2MCAzMSBMNzAgMjMiIHN0cm9rZT0iI0Q3MjYzRCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CiAgPCEtLSBmYWNlIC0tPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNjQiIHI9IjQiIGZpbGw9IiMxRDFEMkIiLz4KICA8Y2lyY2xlIGN4PSI3MSIgY3k9IjY0IiByPSI0IiBmaWxsPSIjMUQxRDJCIi8+CiAgPGNpcmNsZSBjeD0iNTAuNSIgY3k9IjYyLjUiIHI9IjEuMyIgZmlsbD0iI2ZmZiIvPgogIDxjaXJjbGUgY3g9IjcyLjUiIGN5PSI2Mi41IiByPSIxLjMiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI0MiIgY3k9Ijc0IiByPSI0LjUiIGZpbGw9IiNFODgyNkEiIG9wYWNpdHk9Ii41NSIvPgogIDxjaXJjbGUgY3g9Ijc4IiBjeT0iNzQiIHI9IjQuNSIgZmlsbD0iI0U4ODI2QSIgb3BhY2l0eT0iLjU1Ii8+CiAgPHBhdGggZD0iTTUxIDc2IFE2MCA4NCA2OSA3NiIgc3Ryb2tlPSIjMUQxRDJCIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K", "shield": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA3MiI+CiAgPHBhdGggZD0iTTMyIDMgTDU5IDEzIFYzNCBDNTkgNTIgNDYgNjQgMzIgNjkgQzE4IDY0IDUgNTIgNSAzNCBWMTMgWiIgZmlsbD0iIzJFOUU2QiIgc3Ryb2tlPSIjMUU2RTRBIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNMzIgMTEgTDUxIDE4IFYzNCBDNTEgNDcgNDIgNTYgMzIgNjAgWiIgZmlsbD0iIzQ1Qjk4NSIvPgogIDxwYXRoIGQ9Ik0yMCAzNiBMMjggNDQgTDQ1IDI2IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=", "star-empty": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHBhdGggZD0iTTMyIDQgTDQwLjUgMjIuNSBMNjAgMjQuNSBMNDUuNSAzOCBMNDkuNSA1OCBMMzIgNDggTDE0LjUgNTggTDE4LjUgMzggTDQgMjQuNSBMMjMuNSAyMi41IFoiIGZpbGw9IiNEQ0U0RjAiIHN0cm9rZT0iI0FFQkJEMCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=", "star": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHBhdGggZD0iTTMyIDQgTDQwLjUgMjIuNSBMNjAgMjQuNSBMNDUuNSAzOCBMNDkuNSA1OCBMMzIgNDggTDE0LjUgNTggTDE4LjUgMzggTDQgMjQuNSBMMjMuNSAyMi41IFoiIGZpbGw9IiNGMkI2MzIiIHN0cm9rZT0iI0M5OEExMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTMyIDEyIEwzNyAyNCBMMzIgNDAgWiIgZmlsbD0iI0ZGRTA4QSIvPgo8L3N2Zz4K"};</script>
+  <script>
+/* js/assets.js */
+/* Asset lookup.
+   In the folder version images load from assets/.
+   build.py fills window.ASSET_DATA with inlined copies for dist/. */
+window.ASSET_DATA = window.ASSET_DATA || {};
+function A(name) {
+  return window.ASSET_DATA[name] || ("assets/" + name + ".svg");
+}
+
+</script>
+  <script>
+/* js/audio.js */
+/* Synthesized sound effects (Web Audio API, no audio files). */
+const Sound = (() => {
+  let ctx = null;
+  let muted = false;
+
+  function ac() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+
+  function tone(freq, start, dur, type = "sine", vol = 0.18, slideTo = null) {
+    const c = ac(); if (!c || muted) return;
+    const t = c.currentTime + start;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  function noise(start, dur, vol = 0.12, freq = 1200) {
+    const c = ac(); if (!c || muted) return;
+    const t = c.currentTime + start;
+    const len = Math.floor(c.sampleRate * dur);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq;
+    const g = c.createGain(); g.gain.value = vol;
+    src.connect(f); f.connect(g); g.connect(c.destination);
+    src.start(t);
+  }
+
+  return {
+    unlock() { ac(); },
+    get muted() { return muted; },
+    toggle() { muted = !muted; return muted; },
+    tap()    { tone(660, 0, 0.06, "triangle", 0.12); },
+    pick()   { tone(520, 0, 0.08, "triangle", 0.12, 700); },
+    drop()   { tone(380, 0, 0.08, "triangle", 0.14); },
+    good()   { tone(660, 0, 0.12, "triangle"); tone(990, 0.1, 0.18, "triangle"); },
+    bad()    { tone(220, 0, 0.18, "square", 0.08, 160); },
+    knock()  { noise(0, 0.07, 0.3, 400); noise(0.14, 0.07, 0.3, 400); },
+    whoosh() { noise(0, 0.35, 0.18, 1800); },
+    stamp()  { noise(0, 0.08, 0.35, 250); tone(140, 0, 0.12, "sine", 0.2); },
+    shield() { [523, 659, 784].forEach((f, i) => tone(f, i * 0.08, 0.16, "triangle", 0.15)); },
+    win()    { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.25, "triangle", 0.16)); },
+    load()   { tone(300, 0, 0.6, "sine", 0.05, 900); }
+  };
+})();
+
+</script>
+  <script>
+/* js/ui.js */
+/* Small DOM helpers shared by all rounds. */
+const UI = (() => {
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    if (props) {
+      for (const [k, v] of Object.entries(props)) {
+        if (v == null || v === false) continue;
+        if (k === "class") el.className = v;
+        else if (k === "text") el.textContent = v;
+        else if (k === "html") el.innerHTML = v;
+        else if (k === "style") el.style.cssText = v;
+        else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2).toLowerCase(), v);
+        else el.setAttribute(k, v === true ? "" : v);
+      }
+    }
+    for (const kid of kids.flat()) {
+      if (kid == null || kid === false) continue;
+      el.appendChild(typeof kid === "string" || typeof kid === "number" ? document.createTextNode(kid) : kid);
+    }
+    return el;
+  }
+
+  function img(name, cls, alt = "") {
+    return h("img", { src: A(name), class: cls, alt, draggable: "false" });
+  }
+
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function replay(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  function toast(stage, text, bad = false) {
+    const t = h("div", { class: "toast" + (bad ? " bad" : "") }, text);
+    stage.appendChild(t);
+    setTimeout(() => t.remove(), 1700);
+  }
+
+  /* Shows a modal and resolves when close() is called. */
+  function modal(stage, content) {
+    const wrap = h("div", { class: "modal-wrap" }, h("div", { class: "modal" }, content));
+    stage.appendChild(wrap);
+    return () => wrap.remove();
+  }
+
+  return { h, img, wait, shuffle, replay, toast, modal };
+})();
+
+</script>
+  <script>
+/* js/drag.js */
+/* Pointer-based drag and drop that works with mouse and touch,
+   and accounts for the stage being scaled to fit the screen.
+   Movement uses the CSS `translate` property, so `scale` can be
+   changed independently (Round 4 cards shrink over a bin). */
+const Drag = (() => {
+  let scale = 1;
+  function setScale(s) { scale = s; }
+
+  function hit(el, x, y) {
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  }
+
+  /*
+    make(el, {
+      targets: () => [elements],
+      onDrop:  (target, el) => true | false   // true = handled, don't return
+      onPick:  ({ ox, oy }) => void           // grab point inside el, stage px
+      onHover: (target | null) => void
+      enabled: () => boolean
+    })
+  */
+  function make(el, opts) {
+    let sx = 0, sy = 0, dragging = false, hover = null, pid = null;
+
+    function setHover(t) {
+      if (t === hover) return;
+      if (hover) hover.classList.remove("drop-hover");
+      hover = t;
+      if (t) t.classList.add("drop-hover");
+      if (opts.onHover) opts.onHover(t);
+    }
+
+    el.addEventListener("pointerdown", (e) => {
+      if (el.dataset.locked === "1" || (opts.enabled && !opts.enabled())) return;
+      e.preventDefault();
+      pid = e.pointerId;
+      el.setPointerCapture(pid);
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      el.classList.remove("returning");
+      el.classList.add("dragging");
+      const r = el.getBoundingClientRect();
+      if (opts.onPick) opts.onPick({ ox: (e.clientX - r.left) / scale, oy: (e.clientY - r.top) / scale });
+      Sound.pick();
+    });
+
+    el.addEventListener("pointermove", (e) => {
+      if (!dragging || e.pointerId !== pid) return;
+      el.style.translate = `${(e.clientX - sx) / scale}px ${(e.clientY - sy) / scale}px`;
+      setHover(opts.targets().find((t) => hit(t, e.clientX, e.clientY)) || null);
+    });
+
+    function end(e) {
+      if (!dragging || e.pointerId !== pid) return;
+      dragging = false;
+      el.classList.remove("dragging");
+      const target = hover;
+      if (hover) hover.classList.remove("drop-hover");
+      hover = null;
+      const kept = target ? opts.onDrop(target, el) : false;
+      if (!kept) {
+        if (opts.onHover) opts.onHover(null);
+        el.classList.add("returning");
+        el.style.translate = "0px 0px";
+      }
+    }
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+  }
+
+  return { make, setScale };
+})();
+
+</script>
+  <script>
+/* js/round1.js */
+/* ROUND 1 — Address Workshop
+   Drag tiles into the start / name / ending slots to build a website address. */
+const Round1 = (() => {
+  const { h, wait, shuffle, replay } = UI;
+
+  function feedbackFor(D, p, slotIdx, tile) {
+    const F = D.feedback;
+    if (slotIdx === 0) return /w/.test(tile) ? F.spelling : F.startWrong;
+    if (tile === p.address[0]) return F.wwwElsewhere;
+    if (slotIdx === 1 && tile.startsWith(".")) return F.endingInMiddle;
+    if (slotIdx === 2 && tile.startsWith(".")) return F.wrongEnding;
+    return F.spelling;
+  }
+
+  function parcel(ctx, D, p, index) {
+    return new Promise((resolve) => {
+      const play = ctx.play;
+      play.innerHTML = "";
+      let mistakes = 0, filled = 0;
+      const full = p.address[0] + "." + p.address[1] + p.address[2];
+
+      const target = h("div", { class: "r1-target pop" }, "Address to build:", h("b", null, full));
+
+      const slots = p.address.map((_, i) => {
+        const s = h("div", { class: "r1-slot" + (i === 1 ? " wide" : ""), "data-i": i });
+        if (p.showSlotNames) s.appendChild(h("span", { class: "slot-name" }, D.slotNames[i]));
+        return s;
+      });
+      const strip = h("div", { class: "r1-strip" },
+        h("div", { class: "r1-strip-title" }, "Website address"),
+        slots[0], h("div", { class: "r1-dot" }, "."), slots[1], slots[2]);
+
+      const tray = h("div", { class: "r1-tray" });
+      shuffle(p.tiles).forEach((text) => {
+        const tile = h("div", { class: "tile" }, text);
+        tray.appendChild(tile);
+        Drag.make(tile, {
+          targets: () => slots.filter((s) => !s.classList.contains("filled")),
+          onDrop: (slot) => {
+            const i = +slot.dataset.i;
+            if (text === p.address[i]) {
+              slot.classList.add("filled");
+              slot.insertBefore(document.createTextNode(text), slot.firstChild);
+              tile.remove();
+              Sound.good();
+              filled++;
+              if (filled === slots.length) finish();
+              else ctx.feedback("Yes! Keep building the address.", "good", 1800);
+              return true;
+            }
+            mistakes++;
+            Sound.bad();
+            replay(slot, "shake");
+            ctx.feedback(feedbackFor(D, p, i, text), "bad");
+            return false;
+          }
+        });
+      });
+
+      play.append(target, strip, tray);
+      ctx.say(`Drag the tiles to build the website address for ${p.to}.`);
+
+      async function finish() {
+        ctx.record(mistakes === 0);
+        tray.innerHTML = "";
+        tray.appendChild(h("div", { class: "delivered" }, "Address ready!"));
+        Sound.stamp();
+        ctx.feedback(`${full} is ready!`, "good", 0);
+        await wait(1700);
+        resolve();
+      }
+    });
+  }
+
+  return {
+    async start(ctx) {
+      const D = ctx.data.round1;
+      for (let i = 0; i < D.parcels.length; i++) {
+        ctx.setDots(D.parcels.length, i);
+        await parcel(ctx, D, D.parcels[i], i);
+      }
+      ctx.setDots(D.parcels.length, D.parcels.length);
+    }
+  };
+})();
+
+</script>
+  <script>
+/* js/round2.js */
+/* ROUND 2 — Open the Right Door
+   Step 1 (once): connect the computer to the internet.
+   Then for each parcel: choose a browser door, drop the address in the address bar, press Go. */
+const Round2 = (() => {
+  const { h, img, wait, shuffle, replay } = UI;
+
+  function connect(ctx, D) {
+    return new Promise((resolve) => {
+      const play = ctx.play;
+      play.innerHTML = "";
+      const gap = h("div", { class: "r2-gap" });
+      const cable = img("cable", "r2-cable", "Internet cable");
+      const status = h("div", { class: "status" }, "No internet connection");
+      play.appendChild(h("div", { class: "r2-connect pop" },
+        status,
+        h("div", { class: "r2-net" }, img("network-computer", "pc", "Computer"), gap, img("network-cloud", "cloud", "Internet")),
+        cable));
+      ctx.say(D.connectIntro);
+
+      Drag.make(cable, {
+        targets: () => [gap],
+        onDrop: async () => {
+          cable.dataset.locked = "1";
+          cable.style.translate = "";
+          gap.classList.add("fixed");
+          gap.appendChild(cable);
+          status.textContent = "Connected to the internet";
+          status.classList.add("on");
+          Sound.good();
+          ctx.feedback(D.connected, "good", 0);
+          await wait(2200);
+          resolve();
+          return true;
+        }
+      });
+    });
+  }
+
+  function parcel(ctx, D, p, index) {
+    return new Promise((resolve) => {
+      const play = ctx.play;
+      play.innerHTML = "";
+      let wrongs = 0, chosen = false;
+
+      const ticket = h("div", { class: "r2-ticket pop" }, `Parcel ${index + 1}:`, h("b", null, p.address));
+      const street = h("div", { class: "r2-street" });
+
+      shuffle(D.doors).forEach((d) => {
+        const door = h("button", { class: "door", "aria-label": d.name },
+          img(d.icon), h("div", { class: "door-name" }, d.name),
+          h("span", { class: "knob" }), h("span", { class: "step" }));
+        door.addEventListener("click", () => {
+          if (chosen) return;
+          Sound.knock();
+          if (d.kind === "browser") {
+            chosen = true;
+            ctx.record(wrongs === 0);
+            Sound.good();
+            street.classList.add("away");
+            ctx.feedback(`${d.name} ${D.rightDoor}`, "good", 2000);
+            openBrowser(d);
+          } else {
+            wrongs++;
+            Sound.bad();
+            door.classList.add("nope");
+            replay(door, "shake");
+            ctx.feedback(d.msg, "bad", 3400);
+          }
+        });
+        street.appendChild(door);
+      });
+
+      play.append(ticket, street);
+      ctx.say(`Knock on a browser door to visit ${p.address}.`);
+
+      function openBrowser(d) {
+        ticket.style.display = "none";
+        const tabLabel = h("span", null, "New tab");
+        const addr = h("div", { class: "bw-addr empty" }, "Drop the address here");
+        const go = h("button", { class: "bw-go", disabled: true }, "Go");
+        const load = h("div", { class: "bw-load" });
+        const body = h("div", { class: "bw-body" }, load,
+          h("div", { class: "r2-newtab" }, img(d.icon), `${d.name} is open. Where should it take you?`));
+
+        const win = h("div", { class: "bw pop", style: "left:115px; top:2px; width:900px; height:284px; z-index:5" },
+          h("div", { class: "bw-tabs" }, h("div", { class: "bw-tab" }, img(d.icon), tabLabel)),
+          h("div", { class: "bw-bar" },
+            h("span", { class: "bw-nav", disabled: true }, "‹"),
+            h("span", { class: "bw-nav", disabled: true }, "›"),
+            h("span", { class: "bw-nav", disabled: true }, "↻"),
+            addr, go),
+          body);
+
+        const card = h("div", { class: "r2-addrcard", style: "left:0; right:0; margin:0 auto; width:300px; top:300px; text-align:center; z-index:6" }, p.address);
+        play.append(win, card);
+        ctx.say("Drag the address into the address bar at the top.");
+
+        Drag.make(card, {
+          targets: () => [addr],
+          onDrop: () => {
+            card.remove();
+            addr.classList.remove("empty");
+            addr.textContent = p.address;
+            Sound.drop();
+            go.disabled = false;
+            go.classList.add("pulse");
+            ctx.say("Now press Go!");
+            return true;
+          }
+        });
+
+        go.addEventListener("click", async () => {
+          go.disabled = true;
+          go.classList.remove("pulse");
+          Sound.load();
+          replay(load, "run");
+          await wait(950);
+          [...body.children].forEach((c) => c !== load && c.remove());
+          tabLabel.textContent = p.site;
+          body.appendChild(h("div", { class: "r2-site" },
+            h("div", { class: "r2-site-head" }, p.site),
+            h("div", { class: "r2-site-body" }, h("div", { class: "delivered" }, "Delivered!"))));
+          Sound.stamp();
+          ctx.feedback(`${d.name} opened ${p.address}. Parcel delivered!`, "good", 0);
+          await wait(1900);
+          resolve();
+        });
+      }
+    });
+  }
+
+  return {
+    async start(ctx) {
+      const D = ctx.data.round2;
+      ctx.setDots(D.parcels.length, 0);
+      await connect(ctx, D);
+      for (let i = 0; i < D.parcels.length; i++) {
+        ctx.setDots(D.parcels.length, i);
+        await parcel(ctx, D, D.parcels[i], i);
+      }
+      ctx.setDots(D.parcels.length, D.parcels.length);
+    }
+  };
+})();
+
+</script>
+  <script>
+/* js/round3.js */
+/* ROUND 3 — Secret Doors
+   Help a friend find a page by clicking links (secret doors).
+   Safety stops come between the missions. */
+const Round3 = (() => {
+  const { h, img, wait, shuffle } = UI;
+
+  /* ---------- safety stop ---------- */
+  function safetyStop(ctx, cp) {
+    return new Promise((resolve) => {
+      ctx.play.innerHTML = "";
+      let missed = false, done = false;
+      const fb = h("div", { class: "cp-fb" });
+      const cont = h("button", { class: "btn blue small", style: "visibility:hidden" }, "Continue");
+      const choices = h("div", { class: "cp-choices" });
+
+      let extra = null;
+      if (cp.kind === "form") extra = h("div", { class: "cp-fake" }, h("div", null, "Your name"), h("div", null, "Home address"));
+      if (cp.kind === "chat") extra = h("div", { class: "cp-bubble" }, cp.prompt);
+
+      shuffle(cp.choices).forEach((c) => {
+        const b = h("button", { class: "cp-choice" }, c.text);
+        b.addEventListener("click", () => {
+          if (done) return;
+          fb.innerHTML = "";
+          if (c.ok) {
+            done = true;
+            b.classList.add("ok");
+            if (!missed) { ctx.shield(); Sound.shield(); fb.appendChild(img("shield", "", "Safety shield")); }
+            else Sound.good();
+            fb.appendChild(h("div", null,
+              h("div", { class: "cp-tip" }, (missed ? "" : "Shield earned! ") + "Tip: " + cp.tip), c.fb));
+            ctx.feedback(missed ? "That's the safe choice." : "Safe choice! You earned a shield.", "good", 0);
+            cont.style.visibility = "visible";
+            cont.focus();
+          } else {
+            missed = true;
+            b.classList.add("no");
+            Sound.bad();
+            fb.appendChild(h("div", null, c.fb));
+            ctx.feedback("Not safe. Try the other choice.", "bad", 0);
+          }
+        });
+        choices.appendChild(b);
+      });
+
+      ctx.play.appendChild(h("div", { class: "cp-card pop" },
+        h("div", { class: "cp-head " + cp.kind }, cp.heading, h("span", { class: "stamp-mini" }, "Safety stop")),
+        h("div", { class: "cp-body" },
+          cp.kind === "chat" ? null : h("div", { class: "cp-prompt" }, cp.prompt),
+          extra, choices, fb, h("div", { class: "cp-foot" }, cont))));
+      ctx.say("Safety stop! What is the safe thing to do?");
+      cont.addEventListener("click", () => { Sound.tap(); resolve(); });
+    });
+  }
+
+  /* ---------- one mission ---------- */
+  function mission(ctx, D, m) {
+    return new Promise((resolve) => {
+      const play = ctx.play;
+      play.innerHTML = "";
+      let mistakes = 0, finished = false;
+      const history = [];
+
+      const addr = h("div", { class: "bw-addr" });
+      const back = h("button", { class: "bw-nav", "aria-label": "Back" }, "‹");
+      const tab = h("span");
+      const body = h("div", { class: "bw-body" });
+      play.appendChild(h("div", { class: "bw r3-browser pop" },
+        h("div", { class: "bw-tabs" }, h("div", { class: "bw-tab" }, img("icon-browser-2"), tab)),
+        h("div", { class: "bw-bar" }, back,
+          h("span", { class: "bw-nav", disabled: true }, "›"),
+          h("span", { class: "bw-nav", disabled: true }, "↻"), addr),
+        body));
+
+      ctx.say(m.goal);
+
+      back.addEventListener("click", () => {
+        if (history.length < 2 || finished) return;
+        Sound.tap();
+        history.pop();
+        render(history[history.length - 1], false);
+      });
+
+      function go(id) { history.push(id); render(id, true); }
+
+      function linkBtn(text, target) {
+        const b = h("button", { class: "r3-link" }, text);
+        b.addEventListener("click", () => { if (finished) return; Sound.tap(); go(target); });
+        return b;
+      }
+
+      function render(id, fresh) {
+        back.disabled = history.length < 2;
+        body.innerHTML = "";
+        if (id === "results") return renderResults();
+        const pg = m.pages[id];
+        tab.textContent = pg.site;
+        addr.textContent = pg.url;
+
+        const page = h("div", { class: "r3-page" },
+          h("div", { class: "r3-sitehead" }, h("span", { class: "site" }, pg.site), h("h3", null, pg.title)));
+        if (m.chapters) {
+          const row = h("div", { class: "r3-chapters" });
+          m.chapters.forEach((c) => row.appendChild(linkBtn(c.text, c.go)));
+          page.appendChild(row);
+        }
+        pg.blocks.forEach((b) => {
+          if (b.t === "link") { page.appendChild(h("div", { class: "r3-linkrow" }, linkBtn(b.text, b.go))); return; }
+          const p = h("p", { class: "r3-p" }, b.t === "bold" ? h("span", { class: "r3-bold" }, b.text) : b.text);
+          if (id !== m.target) {
+            p.addEventListener("click", () => {
+              if (finished) return;
+              mistakes++;
+              Sound.bad();
+              ctx.feedback(b.t === "bold" ? D.boldNotLink : D.plainNotLink, "bad");
+            });
+          }
+          page.appendChild(p);
+        });
+        body.appendChild(page);
+
+        if (id === m.target) return found(page);
+        if (fresh && id !== m.start && m.wrongPage) {
+          mistakes++;
+          Sound.bad();
+          ctx.feedback(m.wrongPage.replace("{title}", pg.title), "bad", 3400);
+        }
+      }
+
+      function renderResults() {
+        tab.textContent = `${m.search} - ${D.searchSite}`;
+        addr.textContent = "www.searchstreet.com";
+        const page = h("div", { class: "r3-page" },
+          h("div", { class: "r3-sbox" }, m.search),
+          h("div", { class: "r3-results-head" }, `Websites about ${m.search}. Each one is shown as a link.`));
+        m.results.forEach((r) => {
+          page.appendChild(h("div", { class: "r3-result" }, linkBtn(r.title, r.go),
+            h("div", { class: "snip" }, h("span", { class: "url" }, r.url), "  " + r.snippet)));
+        });
+        body.appendChild(page);
+      }
+
+      async function found(page) {
+        finished = true;
+        body.appendChild(h("div", { class: "delivered r3-found" }, "Found it!"));
+        Sound.stamp();
+        ctx.record(mistakes === 0);
+        ctx.feedback(m.found, "good", 0);
+        await wait(2300);
+        resolve();
+      }
+
+      go(m.start);
+    });
+  }
+
+  return {
+    async start(ctx) {
+      const D = ctx.data.round3;
+      const total = D.missions.length;
+      let done = 0;
+      for (const step of D.sequence) {
+        ctx.setDots(total, done);
+        if (step.mission != null) { await mission(ctx, D, D.missions[step.mission]); done++; }
+        else await safetyStop(ctx, D.checkpoints[step.stop]);
+      }
+      ctx.setDots(total, total);
+    }
+  };
+})();
+
+</script>
+  <script>
+/* js/round4.js */
+/* ROUND 4 — Sorting Office
+   Drag each card into the Internet, Browser, Website or Link bin.
+   The card stays full size on the belt and shrinks to fit when it is over a bin. */
+const Round4 = (() => {
+  const { h, replay } = UI;
+  const MINI = 0.45;
+
+  return {
+    start(ctx) {
+      return new Promise((resolve) => {
+        const D = ctx.data.round4;
+        const play = ctx.play;
+        play.innerHTML = "";
+        const counts = {};
+
+        const belt = h("div", { class: "r4-belt" });
+        const counter = h("div", { class: "r4-count" });
+        const bins = D.bins.map((b) => {
+          counts[b.id] = 0;
+          const n = h("div", { class: "bin-n" }, "0 cards");
+          const el = h("div", { class: "bin", "data-id": b.id },
+            h("div", { class: "bin-mouth", style: `background:${b.color}; filter:brightness(.8)` }),
+            h("div", { class: "bin-box", style: `background:${b.color}` },
+              h("div", { class: "bin-name" }, b.name), n));
+          el._n = n;
+          return el;
+        });
+        play.append(belt, counter, h("div", { class: "r4-bins" }, bins));
+
+        let i = 0;
+        ctx.say("Drag each card into the bin where it belongs.");
+        next();
+
+        function next() {
+          if (i >= D.cards.length) {
+            ctx.setDots(D.cards.length, D.cards.length);
+            ctx.feedback("The sorting office is all done!", "good", 0);
+            setTimeout(resolve, 1400);
+            return;
+          }
+          const c = D.cards[i];
+          ctx.setDots(D.cards.length, i);
+          counter.textContent = `Card ${i + 1} of ${D.cards.length}`;
+          let firstTry = true;
+          const card = h("div", { class: "r4-card arrive" + (c.text.length < 14 ? " short" : "") }, c.text);
+          belt.appendChild(card);
+          card.addEventListener("animationend", () => card.classList.remove("arrive"), { once: true });
+
+          Drag.make(card, {
+            targets: () => bins,
+            onPick: ({ ox, oy }) => { card.style.transformOrigin = `${ox}px ${oy}px`; },
+            onHover: (bin) => { card.style.scale = bin ? String(MINI) : "1"; },
+            onDrop: (bin) => {
+              const id = bin.dataset.id;
+              const binName = D.bins.find((b) => b.id === id).name;
+              if (id === c.bin) {
+                card.dataset.locked = "1";
+                card.style.scale = "0.1";
+                card.style.opacity = "0";
+                setTimeout(() => card.remove(), 220);
+                counts[id]++;
+                bin._n.textContent = counts[id] + (counts[id] === 1 ? " card" : " cards");
+                replay(bin, "pop");
+                Sound.good();
+                ctx.record(firstTry);
+                ctx.feedback(`Yes! That goes in ${binName}.`, "good", 1600);
+                i++;
+                setTimeout(next, 500);
+                return true;
+              }
+              firstTry = false;
+              Sound.bad();
+              replay(bin, "shake");
+              ctx.feedback(c.hint || `Not ${binName}. ${D.hints[id]}`, "bad", 3600);
+              return false;
+            }
+          });
+        }
+      });
+    }
+  };
+})();
+
+</script>
+  <script>
+/* js/main.js */
+/* Game flow: title → 4 rounds (each with an intro card) → end screen. */
+(() => {
+  const D = window.POSTMAN_DATA;
+  const stage = document.getElementById("stage");
+  const { h, img, wait } = UI;
+  const ROUNDS = [Round1, Round2, Round3, Round4];
+  const TOTAL_SHIELDS = Object.keys(D.round3.checkpoints).length;
+  let stats;
+
+  /* ---------- scale the 1130 x 502 stage to fit ---------- */
+  function fit() {
+    const s = Math.min(window.innerWidth / 1130, window.innerHeight / 502);
+    stage.style.transform = `scale(${s})`;
+    Drag.setScale(s);
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  function resetStats() { stats = { items: 0, first: 0, streak: 0, best: 0, shields: 0 }; }
+  function clear() { stage.innerHTML = ""; }
+
+  /* ---------- title ---------- */
+  function title() {
+    clear();
+    stage.append(
+      img("city", "bg-city"),
+      img("pip", "title-pip", "Pip the Internet Postman"),
+      img("parcel", "title-parcel"),
+      h("div", { class: "title-card pop" },
+        h("h1", null, h("span", null, "Internet"), "Postman"),
+        h("p", null, D.subtitle),
+        h("button", { class: "btn", onclick: () => { Sound.unlock(); Sound.tap(); run(); } }, "Start delivering")));
+  }
+
+  /* ---------- game shell (HUD + play area + Pip bar) ---------- */
+  function shell(r) {
+    clear();
+    const dots = h("div", { class: "hud-dots" });
+    const shieldN = h("span", null, `${stats.shields}/${TOTAL_SHIELDS}`);
+    const mute = h("button", { class: "hud-btn", "aria-label": "Sound on or off" }, Sound.muted ? "🔇" : "🔊");
+    mute.addEventListener("click", () => { mute.textContent = Sound.toggle() ? "🔇" : "🔊"; });
+    const back = h("button", { class: "hud-btn", "aria-label": "Back" }, "←");
+    back.addEventListener("click", () => window.history.back());
+
+    const play = h("div", { class: "play" });
+    const sayEl = h("div", { class: "say" });
+    let base = "", timer = null;
+
+    function show(text, mood, flash) {
+      sayEl.className = "say" + (mood ? " " + mood : "");
+      sayEl.innerHTML = "";
+      if (mood) sayEl.appendChild(h("span", { class: "say-ic" }, mood === "good" ? "✓" : "✗"));
+      sayEl.appendChild(document.createTextNode(text));
+      if (flash) UI.replay(sayEl, "flash");
+    }
+
+    stage.append(
+      img("city", "bg-city"), h("div", { class: "dim" }), play,
+      h("div", { class: "hud" }, back,
+        h("div", { class: "hud-title" }, D.title),
+        h("div", { class: "hud-round" }, `Round ${r.id} of ${D.rounds.length}: ${r.name}`),
+        h("div", { class: "hud-spacer" }), dots,
+        h("div", { class: "hud-shields", title: "Safety shields" }, img("shield", "", "Safety shields"), shieldN),
+        mute),
+      h("div", { class: "guide" }, img("pip", "", "Pip"), sayEl));
+
+    return {
+      stage, play, data: D,
+      /* the current instruction: stays on screen */
+      say(text) {
+        base = text;
+        clearTimeout(timer);
+        show(text, "", true);
+      },
+      /* green / red feedback that shows briefly, then returns to the instruction */
+      feedback(text, mood = "good", ms = 2800) {
+        clearTimeout(timer);
+        show(text, mood, true);
+        if (ms) timer = setTimeout(() => show(base, "", false), ms);
+      },
+      record(ok) {
+        stats.items++;
+        if (ok) { stats.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      },
+      shield() {
+        stats.shields++;
+        shieldN.textContent = `${stats.shields}/${TOTAL_SHIELDS}`;
+        UI.replay(shieldN.parentElement, "pop");
+      },
+      setDots(total, current) {
+        dots.innerHTML = "";
+        const w = total > 6 ? 16 : 26;
+        for (let i = 0; i < total; i++) {
+          dots.appendChild(h("i", { class: i < current ? "done" : i === current ? "now" : "", style: `width:${w}px` }));
+        }
+      }
+    };
+  }
+
+  function intro(ctx, r) {
+    return new Promise((resolve) => {
+      const go = h("button", { class: "btn" }, "Let's go");
+      const card = h("div", { class: "intro-card pop" },
+        h("div", { class: "stamp" }, `Round ${r.id}`),
+        h("h2", null, r.name),
+        h("p", { class: "teach" }, r.teach),
+        h("p", { class: "task" }, r.task),
+        go);
+      ctx.play.appendChild(card);
+      ctx.say("Press Let's go to start the round.");
+      go.focus();
+      go.addEventListener("click", () => { Sound.tap(); card.remove(); resolve(); }, { once: true });
+    });
+  }
+
+  async function run() {
+    resetStats();
+    for (let i = 0; i < ROUNDS.length; i++) {
+      const ctx = shell(D.rounds[i]);
+      await intro(ctx, D.rounds[i]);
+      await ROUNDS[i].start(ctx);
+      await wait(300);
+    }
+    end();
+  }
+
+  /* ---------- end screen ---------- */
+  function end() {
+    clear();
+    const acc = stats.items ? stats.first / stats.items : 0;
+    const stars = acc >= 0.9 ? 3 : acc >= 0.65 ? 2 : 1;
+    const msg = ["Good try, Postman!", "Great delivering!", "Super Internet Postman!"][stars - 1];
+    Sound.win();
+
+    const again = h("button", { class: "btn" }, "Play again");
+    again.addEventListener("click", () => { Sound.tap(); run(); });
+
+    stage.append(
+      img("city", "bg-city"),
+      h("div", { class: "end-card" },
+        h("h2", null, msg),
+        h("div", { class: "end-stars" }, [0, 1, 2].map((i) => img(i < stars ? "star" : "star-empty", "", i < stars ? "Star earned" : "Star"))),
+        h("div", { class: "end-stats" },
+          h("div", { class: "end-stat" }, h("b", null, Math.round(acc * 100) + "%"), h("span", null, "First-try answers")),
+          h("div", { class: "end-stat" }, h("b", null, String(stats.best)), h("span", null, "Best streak")),
+          h("div", { class: "end-stat" }, h("b", null, `${stats.shields}/${TOTAL_SHIELDS}`), h("span", null, "Safety shields"))),
+        h("div", { class: "end-btns" }, again)));
+  }
+
+  title();
+})();
+
+</script>
+</body>
+</html>

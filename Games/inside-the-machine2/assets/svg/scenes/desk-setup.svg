@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300" role="img" aria-label="A desktop computer on a desk, with five numbered parts"><style>.hw{fill:#F1F6F2;stroke:#12281F;stroke-width:3}.scr{fill:#27506B}.desk{fill:#B86A22;opacity:.55}
+.inkline{stroke:#12281F;stroke-width:3;fill:none;stroke-linecap:round}.keys{stroke:#4A6257;stroke-width:4;stroke-dasharray:11 5;fill:none}
+.kb,.pad{fill:#FFFFFF;stroke:#12281F;stroke-width:2}.lens,.port{fill:#12281F}.btn{fill:#4A6257}
+.dots{stroke:#12281F;stroke-width:4.5;stroke-linecap:round;fill:none}.hit{fill:none;stroke:none}</style>
+ <rect x="0" y="252" width="480" height="14" rx="3" class="desk"/><rect x="30" y="266" width="14" height="34" class="desk"/><rect x="436" y="266" width="14" height="34" class="desk"/>
+ <rect x="50" y="140" width="48" height="112" rx="8" class="hw"/><circle cx="74" cy="168" r="10" class="hw"/><circle cx="74" cy="216" r="17" class="hw"/>
+ <rect x="228" y="155" width="24" height="58" class="hw"/><rect x="196" y="210" width="88" height="10" rx="5" class="hw"/>
+ <rect x="150" y="30" width="180" height="125" rx="8" class="hw"/><rect x="162" y="42" width="156" height="101" rx="3" class="scr"/>
+ <rect x="140" y="222" width="180" height="28" rx="5" class="hw"/><path d="M150 231h160M150 241h160" class="keys"/>
+ <path d="M357 218c0-20 10-30 19-40" class="inkline"/><rect x="345" y="218" width="24" height="34" rx="12" class="hw"/>
+ <rect x="376" y="92" width="72" height="160" rx="6" class="hw"/><circle cx="412" cy="112" r="7" class="hw"/><path d="M390 136h44M390 146h44" class="inkline"/>
+</svg>

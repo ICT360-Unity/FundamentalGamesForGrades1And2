@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="370" viewBox="0 0 240 370" aria-label="A phone"><style>.hw{fill:#F1F6F2;stroke:#12281F;stroke-width:3}.scr{fill:#27506B}.desk{fill:#B86A22;opacity:.55}
+.inkline{stroke:#12281F;stroke-width:3;fill:none;stroke-linecap:round}.keys{stroke:#4A6257;stroke-width:4;stroke-dasharray:11 5;fill:none}
+.kb,.pad{fill:#FFFFFF;stroke:#12281F;stroke-width:2}.lens,.port{fill:#12281F}.btn{fill:#4A6257}
+.dots{stroke:#12281F;stroke-width:4.5;stroke-linecap:round;fill:none}.hit{fill:none;stroke:none}</style>
+ <rect x="60" y="10" width="120" height="346" rx="22" class="hw"/>
+ <g id="hotspot-touchscreen"><rect x="70" y="44" width="100" height="276" rx="6" class="scr"/><rect x="70" y="44" width="100" height="276" rx="6" class="hit"/></g>
+ <g id="hotspot-earpiece"><rect x="92" y="18" width="38" height="20" rx="4" class="hit"/><rect x="99" y="25" width="24" height="5" rx="2.5" class="port"/></g>
+ <g id="hotspot-camera"><circle cx="148" cy="28" r="11" class="hit"/><circle cx="148" cy="28" r="4.5" class="lens"/></g>
+ <g id="hotspot-power"><rect x="178" y="84" width="24" height="56" rx="4" class="hit"/><rect x="180" y="92" width="7" height="40" rx="3" class="btn"/></g>
+ <g id="hotspot-volume"><rect x="38" y="76" width="24" height="84" rx="4" class="hit"/><rect x="53" y="82" width="7" height="30" rx="3" class="btn"/><rect x="53" y="120" width="7" height="30" rx="3" class="btn"/></g>
+ <g id="hotspot-port"><rect x="100" y="326" width="40" height="28" rx="4" class="hit"/><rect x="108" y="341" width="24" height="7" rx="3" class="port"/></g>
+ <g id="hotspot-mic"><rect x="146" y="326" width="28" height="28" rx="4" class="hit"/><circle cx="155" cy="344" r="2.5" class="port"/><circle cx="163" cy="344" r="2.5" class="port"/></g>
+</svg>
